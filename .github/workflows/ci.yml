@@ -1,0 +1,71 @@
+name: ci
+
+# Prova que a arvore compila e passa no subconjunto do gate que roda numa
+# maquina limpa. Os diagnosticos que leem o estado real do PC (audio, jogos,
+# rede, Steam, modo Xbox) e os testes fisicos ficam no gate local
+# (scripts/verificar-qualidade.ps1); ver docs/guias/desenvolvimento.md.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Build, static checks and fixture suites
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Windows PowerShell 5.1 de proposito: e o runtime que os scripts e o
+      # aplicativo suportam. O csc do .NET Framework 4.x ja vem no runner.
+      - name: CI gate
+        shell: powershell
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verificar-ci.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Verification log on failure
+        if: failure()
+        shell: powershell
+        run: |
+          $log = 'bin\ci\design-preview\preview.log'
+          if (Test-Path -LiteralPath $log) { Get-Content -LiteralPath $log -Tail 200 }
+
+  secrets:
+    name: Gitleaks (full history)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          cache: false
+
+      # O relatorio JSON fica fora do workspace e so metadados sao impressos:
+      # regra, arquivo, linha e commit. O valor encontrado nunca vai para o log.
+      - name: Run Gitleaks
+        shell: bash
+        run: |
+          go install github.com/zricethezav/gitleaks/v8@v8.30.1
+          set +e
+          "$(go env GOPATH)/bin/gitleaks" git --no-banner --redact --report-format json --report-path "$RUNNER_TEMP/gitleaks.json"
+          status=$?
+          set -e
+          if [ -s "$RUNNER_TEMP/gitleaks.json" ] && [ "$(jq 'length' "$RUNNER_TEMP/gitleaks.json")" -gt 0 ]; then
+            echo '::group::Gitleaks findings (rule / file / line / commit)'
+            jq -r '.[] | [.RuleID, .File, (.StartLine|tostring), .Commit] | @tsv' "$RUNNER_TEMP/gitleaks.json" | sort -u
+            echo '::endgroup::'
+          fi
+          exit "$status"

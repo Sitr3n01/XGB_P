@@ -1,0 +1,109 @@
+name: release
+
+# Empacota uma release a partir de uma tag v<versao> ou v<versao>-<sufixo>.
+# A versao base da tag precisa ser igual a quality/policy.json (releaseVersion)
+# e a ProductVersion do executavel. Tags com sufixo (v2.1.0-rc.1) saem como
+# pre-release: a aprovacao final depende dos testes fisicos, que a CI nao faz.
+#
+# O workflow nao instala nem atualiza nada. Publica o ZIP, SHA256SUMS.txt e um
+# atestado de proveniencia do build; quem baixa confere o hash.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Package Windows release
+    runs-on: windows-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check the tag against the policy
+        id: version
+        shell: powershell
+        run: |
+          $tag = '${{ github.ref_name }}'
+          $policy = Get-Content -LiteralPath quality\policy.json -Raw | ConvertFrom-Json
+          if ($tag -notmatch '^v(\d+\.\d+\.\d+)(-[0-9A-Za-z.-]+)?$') { throw "Tag invalida: $tag" }
+          if ($Matches[1] -ne $policy.releaseVersion) { throw "Tag $tag difere da versao da politica ($($policy.releaseVersion))." }
+          $prerelease = [bool]$Matches[2]
+          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding ascii
+          "version=$($policy.releaseVersion)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding ascii
+          "prerelease=$prerelease" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding ascii
+
+      # Uma release nunca sai de uma arvore que nao passa no proprio gate de CI.
+      - name: CI gate
+        shell: powershell
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verificar-ci.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Package
+        shell: powershell
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\empacotar.ps1 -PastaBuild bin\ci -PastaSaida bin\release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-Content -LiteralPath bin\release\SHA256SUMS.txt
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            bin/release/*.zip
+            bin/ci/XGB_P.exe
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: XGB_P-${{ steps.version.outputs.tag }}
+          path: |
+            bin/release/*.zip
+            bin/release/SHA256SUMS.txt
+          if-no-files-found: error
+
+      # GitHub CLI em vez de uma action de terceiros: nenhuma dependencia extra
+      # na cadeia de suprimentos. Notas = secao do CHANGELOG + verificacao.
+      - name: Publish the GitHub release
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = '${{ steps.version.outputs.tag }}'
+          $version = '${{ steps.version.outputs.version }}'
+          $lines = Get-Content -LiteralPath CHANGELOG.md -Encoding UTF8
+          $start = [Array]::FindIndex($lines, [Predicate[string]]{ param($l) $l.StartsWith("## [$version]") })
+          if ($start -lt 0) { throw "CHANGELOG.md nao tem a secao [$version]." }
+          $notes = New-Object System.Collections.Generic.List[string]
+          for ($i = $start + 1; $i -lt $lines.Count -and -not $lines[$i].StartsWith('## ['); $i++) { $notes.Add($lines[$i]) }
+          $verification = @(
+            '',
+            '## Verification',
+            '',
+            'Check the download before running it:',
+            '',
+            '```powershell',
+            "Get-FileHash .\XGB_P-$version-win-x64.zip -Algorithm SHA256",
+            "gh attestation verify .\XGB_P-$version-win-x64.zip --repo ${{ github.repository }}",
+            '```',
+            '',
+            'Compare the hash with `SHA256SUMS.txt`. The executable is not Authenticode-signed, so SmartScreen may warn on first launch.'
+          )
+          $notesPath = Join-Path (Get-Location) 'release-notes.md'
+          [IO.File]::WriteAllText($notesPath, ((@($notes) + $verification) -join "`n"), (New-Object System.Text.UTF8Encoding($false)))
+          $releaseArgs = @($tag, '--title', "XGB_P $tag", '--notes-file', 'release-notes.md', '--verify-tag')
+          if ('${{ steps.version.outputs.prerelease }}' -eq 'True') { $releaseArgs += '--prerelease' }
+          gh release create @releaseArgs
+          if ($LASTEXITCODE -ne 0) { throw "gh release create falhou para $tag" }
+          gh release upload $tag @(Get-ChildItem bin\release -File | Where-Object { $_.Extension -in '.zip', '.txt' } | ForEach-Object { $_.FullName })
+          if ($LASTEXITCODE -ne 0) { throw "gh release upload falhou para $tag" }

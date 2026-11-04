@@ -1,0 +1,29 @@
+name: Feature request
+description: Propose a change in behavior or a new capability.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What you are trying to do in the Xbox full screen experience, and what gets in the way today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: The behavior you would like. Mention the panel and the controller input involved.
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+      description: |
+        The project does not send output to the DualSense, inject code, modify Microsoft binaries or change system settings without the user.
+        Say if the proposal touches any of these, or Steam, DSX or AMD behavior.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

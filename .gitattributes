@@ -1,0 +1,27 @@
+* text=auto
+
+# Codigo e scripts do Windows: CRLF no checkout, LF no repositorio.
+*.cs text eol=crlf
+*.ps1 text eol=crlf
+*.xaml text eol=crlf
+*.manifest text eol=crlf
+*.xml text eol=crlf
+
+# Documentacao e configuracao: LF.
+*.md text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.py text eol=lf
+LICENSE text eol=lf
+NOTICE text eol=lf
+.editorconfig text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.exe binary
+*.dll binary

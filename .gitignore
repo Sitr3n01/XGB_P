@@ -1,0 +1,38 @@
+# Saidas de build, verificacao e pacotes
+bin/
+obj/
+reports/
+*.zip
+*.msix
+*.appx
+*.appxbundle
+
+# Logs e dados locais do aplicativo
+logs/
+*.log
+
+# Assinatura e segredos: nunca versionar
+*.pfx
+*.cer
+*.pvk
+*.snk
+*.key
+*.pem
+
+# Analise local e caches
+*.snapshot
+*.gzf
+__pycache__/
+*.pyc
+
+# IDE e sistema
+.vs/
+.vscode/
+*.user
+Thumbs.db
+desktop.ini
+
+# Instrucoes locais de agentes (caminhos e estado desta maquina)
+CLAUDE.local.md
+AGENTS.local.md
+.claude/settings.local.json

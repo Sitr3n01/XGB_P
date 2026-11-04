@@ -1,0 +1,6 @@
+title = "XGB_P gitleaks config"
+
+# Regras padrao do Gitleaks, sem excecoes. O repositorio nao tem segredos de
+# servico: qualquer achado e tratado como vazamento real e investigado.
+[extend]
+useDefault = true

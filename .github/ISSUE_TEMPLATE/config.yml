@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/Sitr3n01/XGB_P/security/advisories/new
+    about: Report it privately. Never in a public issue.
+  - name: Documentation
+    url: https://github.com/Sitr3n01/XGB_P/tree/main/docs
+    about: Architecture, decision records, technical references and guides.

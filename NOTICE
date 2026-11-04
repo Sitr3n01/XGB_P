@@ -1,0 +1,43 @@
+XGB_P
+Copyright 2026 Sitr3n
+
+Licensed under the Apache License, Version 2.0. See LICENSE.
+
+This repository contains original source code only. It does not include,
+redistribute or relicense any third-party binary, sound, image or SDK. The
+software interoperates with separately installed products that remain subject
+to their own licenses and terms:
+
+- Microsoft Windows 11, the Xbox full screen experience API
+  (GamingExperience), WinRT and the .NET Framework. Called through public,
+  documented APIs only; no Microsoft binary is modified or injected.
+- Steam and Steam Big Picture, Valve Corporation. Driven through steam://
+  protocol links and read-only reads of Steam's own local files, which are not a
+  stable public contract.
+- DSX (DualSenseX), Paliverse. Restored through the normal window APIs; its
+  configuration and profiles are never written.
+- HidHide, Nefarius Software Solutions. Configured by the user, never by this
+  software.
+- AMD Software: Adrenalin Edition and the AMD Device Library eXtra (ADLX).
+  ADLX is called from C# through the interface layout published in AMD's ADLX
+  SDK headers (MIT License, https://github.com/GPUOpen-LibrariesAndSDKs/ADLX).
+  No SDK file is included.
+- HWiNFO (REALiX) shared memory and RivaTuner Statistics Server (Guru3D)
+  shared memory, read according to their public documentation.
+
+The DualSense HID report layout was checked against the SDL project's HIDAPI
+driver (zlib License, https://github.com/libsdl-org/SDL). No SDL code is
+included.
+
+Trademarks
+----------
+Microsoft, Windows, Xbox and Xbox Game Bar are trademarks of the Microsoft
+group of companies. PlayStation and DualSense are trademarks of Sony
+Interactive Entertainment Inc. Steam and Steam Big Picture are trademarks of
+Valve Corporation. AMD, Radeon, Adrenalin, FidelityFX, FSR and ReLive are
+trademarks of Advanced Micro Devices, Inc. All other names are trademarks of
+their respective owners.
+
+XGB_P is an independent personal project. It is not affiliated with, endorsed
+by, or sponsored by Microsoft, Sony, Valve, AMD or any other company named
+above. Those names are used only to describe compatibility.

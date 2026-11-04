@@ -1,0 +1,302 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:design="clr-namespace:XGBP.Design;assembly=XGB_P"
+        Title="XGB_P" WindowStyle="None" ResizeMode="NoResize"
+        AllowsTransparency="True" Background="Transparent" Topmost="True" ShowInTaskbar="False"
+        FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}">
+  <Window.Resources>
+    <!-- Superficies escuras locais; destaque do Windows com contraste (ADR 0055). Nomes Green historicos. -->
+    <design:AccentState x:Key="AccentState"/>
+    <SolidColorBrush x:Key="XboxGreen" Color="{Binding Fill, Source={StaticResource AccentState}}"/>
+    <SolidColorBrush x:Key="FocusGreen" Color="{Binding Focus, Source={StaticResource AccentState}}"/>
+    <SolidColorBrush x:Key="AccentText" Color="{Binding Text, Source={StaticResource AccentState}}"/>
+    <SolidColorBrush x:Key="TextPrimary" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Muted" Color="#BFBFBF"/>
+    <SolidColorBrush x:Key="ToggleTrackOn" Color="#606060"/>
+    <SolidColorBrush x:Key="ToggleThumbOn" Color="#101010"/>
+    <SolidColorBrush x:Key="SurfaceRail" Color="#F2141414"/>
+    <SolidColorBrush x:Key="SurfacePanel" Color="#FA1F1F1F"/>
+    <SolidColorBrush x:Key="SurfaceCard" Color="#2B2B2B"/>
+    <SolidColorBrush x:Key="SurfaceHover" Color="#383838"/>
+    <SolidColorBrush x:Key="SurfaceSelected" Color="#333333"/>
+    <SolidColorBrush x:Key="SurfacePressed" Color="#404040"/>
+    <SolidColorBrush x:Key="Divider" Color="#404040"/>
+    <SolidColorBrush x:Key="MeterTrack" Color="#505050"/>
+    <SolidColorBrush x:Key="Critical" Color="#FF99A4"/>
+    <SolidColorBrush x:Key="FeedbackWarning" Color="#F2C94C"/>
+    <!-- Vermelho do botao fechar das janelas do Windows. -->
+    <SolidColorBrush x:Key="CloseRed" Color="#E81123"/>
+    <SolidColorBrush x:Key="Backdrop" Color="#48000000"/>
+    <SolidColorBrush x:Key="SurfaceFlyout" Color="#2C2C2C"/>
+    <SolidColorBrush x:Key="DescriptionSurface" Color="#2B2B2B"/>
+    <SolidColorBrush x:Key="DescriptionBorder" Color="#454545"/>
+    <SolidColorBrush x:Key="DescriptionForeground" Color="#F2F2F2"/>
+    <SolidColorBrush x:Key="ScrollLine" Color="#8C8C8C"/>
+    <SolidColorBrush x:Key="ScrollLineActive" Color="#C8C8C8"/>
+    <Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style>
+    <!-- Barra de rolagem do Windows 11: linha fina sobre o conteudo, que engrossa sob o mouse ou no arraste. -->
+    <ControlTemplate x:Key="ScrollPage" TargetType="RepeatButton"><Border Background="Transparent"/></ControlTemplate>
+    <Style x:Key="ScrollThumb" TargetType="Thumb">
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Thumb">
+        <Border x:Name="Line" Background="{StaticResource ScrollLine}" CornerRadius="3"/>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Line" Property="Background" Value="{StaticResource ScrollLineActive}"/></Trigger>
+          <Trigger Property="IsDragging" Value="True"><Setter TargetName="Line" Property="Background" Value="{StaticResource ScrollLineActive}"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="ScrollBar">
+      <Setter Property="Focusable" Value="False"/><Setter Property="MinWidth" Value="0"/><Setter Property="MinHeight" Value="0"/>
+      <Setter Property="Width" Value="8"/><Setter Property="Height" Value="Auto"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ScrollBar">
+        <Grid Background="Transparent">
+          <Track x:Name="PART_Track" Orientation="Vertical" IsDirectionReversed="True"
+                 Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" ViewportSize="{TemplateBinding ViewportSize}"
+                 Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+            <Track.DecreaseRepeatButton><RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" Focusable="False" Template="{StaticResource ScrollPage}"/></Track.DecreaseRepeatButton>
+            <Track.Thumb><Thumb x:Name="Thumb" Style="{StaticResource ScrollThumb}" Width="3" MinHeight="24" HorizontalAlignment="Right"/></Track.Thumb>
+            <Track.IncreaseRepeatButton><RepeatButton Command="{x:Static ScrollBar.PageDownCommand}" Focusable="False" Template="{StaticResource ScrollPage}"/></Track.IncreaseRepeatButton>
+          </Track>
+        </Grid>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Thumb" Property="Width" Value="6"/></Trigger>
+          <Trigger SourceName="Thumb" Property="IsDragging" Value="True"><Setter TargetName="Thumb" Property="Width" Value="6"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+      <Style.Triggers>
+        <Trigger Property="Orientation" Value="Horizontal">
+          <Setter Property="Width" Value="Auto"/><Setter Property="Height" Value="8"/>
+          <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ScrollBar">
+            <Grid Background="Transparent">
+              <Track x:Name="PART_Track" Orientation="Horizontal"
+                     Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" ViewportSize="{TemplateBinding ViewportSize}"
+                     Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                <Track.DecreaseRepeatButton><RepeatButton Command="{x:Static ScrollBar.PageLeftCommand}" Focusable="False" Template="{StaticResource ScrollPage}"/></Track.DecreaseRepeatButton>
+                <Track.Thumb><Thumb x:Name="Thumb" Style="{StaticResource ScrollThumb}" Height="3" MinWidth="24" VerticalAlignment="Bottom"/></Track.Thumb>
+                <Track.IncreaseRepeatButton><RepeatButton Command="{x:Static ScrollBar.PageRightCommand}" Focusable="False" Template="{StaticResource ScrollPage}"/></Track.IncreaseRepeatButton>
+              </Track>
+            </Grid>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Thumb" Property="Height" Value="6"/></Trigger>
+              <Trigger SourceName="Thumb" Property="IsDragging" Value="True"><Setter TargetName="Thumb" Property="Height" Value="6"/></Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate></Setter.Value></Setter>
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+    <!-- Barras sobrepostas: o conteudo usa a largura toda e o Padding reserva so o espaco da linha. -->
+    <Style TargetType="ScrollViewer">
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ScrollViewer">
+        <Grid Background="{TemplateBinding Background}">
+          <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" Margin="{TemplateBinding Padding}"
+                                  CanContentScroll="{TemplateBinding CanContentScroll}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          <ScrollBar x:Name="PART_VerticalScrollBar" Orientation="Vertical" HorizontalAlignment="Right" Cursor="Arrow"
+                     Minimum="0" Maximum="{TemplateBinding ScrollableHeight}" ViewportSize="{TemplateBinding ViewportHeight}"
+                     Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                     Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+          <ScrollBar x:Name="PART_HorizontalScrollBar" Orientation="Horizontal" VerticalAlignment="Bottom" Cursor="Arrow"
+                     Minimum="0" Maximum="{TemplateBinding ScrollableWidth}" ViewportSize="{TemplateBinding ViewportWidth}"
+                     Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                     Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
+        </Grid>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="Action" TargetType="Button">
+      <!-- O contorno verde do template ja indica foco; evita o adorner pontilhado do tema WPF. -->
+      <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/><Setter Property="Background" Value="{StaticResource SurfaceCard}"/>
+      <Setter Property="BorderBrush" Value="Transparent"/><Setter Property="BorderThickness" Value="2"/>
+      <Setter Property="FontSize" Value="20"/><Setter Property="Padding" Value="18,12"/>
+      <Setter Property="Margin" Value="0,0,0,8"/><Setter Property="HorizontalContentAlignment" Value="Left"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+        <Border x:Name="Frame" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12">
+          <Grid><Border x:Name="HoverShade" Background="{StaticResource SurfaceHover}" CornerRadius="10" Opacity="0" IsHitTestVisible="False"/>
+          <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/></Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource FocusGreen}"/><Setter TargetName="Frame" Property="Background" Value="{StaticResource SurfaceSelected}"/></Trigger>
+          <Trigger Property="IsPressed" Value="True"><Setter TargetName="Frame" Property="Background" Value="{StaticResource SurfacePressed}"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <!-- Fechar apps e jogos: contorno vermelho com o mouse em cima ou com o seletor (foco). -->
+    <Style x:Key="CloseAction" TargetType="Button" BasedOn="{StaticResource Action}">
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+        <Border x:Name="Frame" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12">
+          <Grid><Border x:Name="HoverShade" Background="{StaticResource SurfaceHover}" CornerRadius="10" Opacity="0" IsHitTestVisible="False"/>
+          <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/></Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource CloseRed}"/></Trigger>
+          <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource CloseRed}"/><Setter TargetName="Frame" Property="Background" Value="{StaticResource SurfaceSelected}"/></Trigger>
+          <Trigger Property="IsPressed" Value="True"><Setter TargetName="Frame" Property="Background" Value="{StaticResource SurfacePressed}"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="AppStripArrow" TargetType="Button" BasedOn="{StaticResource Action}">
+      <Setter Property="Background" Value="Transparent"/><Setter Property="BorderBrush" Value="Transparent"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+        <Border x:Name="ArrowFrame" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="1" CornerRadius="10">
+          <Grid><Border x:Name="HoverShade" Background="#D92B2B2B" CornerRadius="8" Opacity="0" IsHitTestVisible="False"/>
+          <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ArrowFrame" Property="BorderBrush" Value="#38FFFFFF"/></Trigger>
+          <Trigger Property="IsPressed" Value="True"><Setter TargetName="ArrowFrame" Property="Background" Value="{StaticResource SurfacePressed}"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="MuteButton" TargetType="Button" BasedOn="{StaticResource Action}">
+      <Setter Property="Padding" Value="0"/><Setter Property="Margin" Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+        <Border x:Name="MuteFrame" Background="{TemplateBinding Background}" CornerRadius="6"
+                BorderThickness="2" BorderBrush="{TemplateBinding BorderBrush}">
+          <Grid><Border x:Name="HoverShade" Background="{StaticResource SurfaceHover}" CornerRadius="4" Opacity="0" IsHitTestVisible="False"/>
+          <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="MuteFrame" Property="BorderBrush" Value="{StaticResource FocusGreen}"/></Trigger>
+          <Trigger Property="IsPressed" Value="True"><Setter TargetName="MuteFrame" Property="Background" Value="{StaticResource SurfacePressed}"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <!-- Player da Home: botoes redondos discretos e reproduzir/pausar em destaque branco. -->
+    <Style x:Key="MediaButton" TargetType="Button" BasedOn="{StaticResource Action}">
+      <Setter Property="Background" Value="Transparent"/><Setter Property="Padding" Value="0"/><Setter Property="Margin" Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+        <Border x:Name="MediaFrame" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2" CornerRadius="100">
+          <Grid><Border x:Name="HoverShade" Background="{StaticResource SurfaceHover}" CornerRadius="100" Opacity="0" IsHitTestVisible="False"/>
+          <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="MediaFrame" Property="BorderBrush" Value="{StaticResource FocusGreen}"/><Setter TargetName="MediaFrame" Property="Background" Value="{StaticResource SurfaceSelected}"/></Trigger>
+          <Trigger Property="IsPressed" Value="True"><Setter TargetName="MediaFrame" Property="Background" Value="{StaticResource SurfacePressed}"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="MediaPrimary" TargetType="Button" BasedOn="{StaticResource MediaButton}">
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+        <Border x:Name="PrimaryRing" BorderBrush="Transparent" BorderThickness="2" CornerRadius="100" Padding="2">
+          <Border x:Name="PrimaryFrame" Background="{StaticResource TextPrimary}" CornerRadius="100">
+            <Grid><Border x:Name="HoverShade" Background="#E6E6E6" CornerRadius="100" Opacity="0" IsHitTestVisible="False"/>
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Grid>
+          </Border>
+        </Border>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="PrimaryRing" Property="BorderBrush" Value="{StaticResource FocusGreen}"/></Trigger>
+          <Trigger Property="IsPressed" Value="True"><Setter TargetName="PrimaryFrame" Property="Background" Value="#C8C8C8"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="SliderTrackButton" TargetType="RepeatButton">
+      <Setter Property="Focusable" Value="False"/><Setter Property="IsTabStop" Value="False"/>
+      <Setter Property="Height" Value="4"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="RepeatButton">
+        <Border Background="{TemplateBinding Background}" CornerRadius="2"/>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="VolumeSlider" TargetType="Slider">
+      <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Slider">
+        <Border x:Name="SliderFocus" BorderThickness="2" BorderBrush="Transparent" CornerRadius="5" Padding="4,0">
+          <Track x:Name="PART_Track" Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" Value="{TemplateBinding Value}">
+            <Track.DecreaseRepeatButton><RepeatButton Style="{StaticResource SliderTrackButton}" Background="{StaticResource XboxGreen}" Command="{x:Static Slider.DecreaseLarge}"/></Track.DecreaseRepeatButton>
+            <Track.Thumb><Thumb Width="6" Height="18"><Thumb.Template><ControlTemplate TargetType="Thumb"><Border Background="{StaticResource TextPrimary}" BorderBrush="{StaticResource SurfacePanel}" BorderThickness="1" CornerRadius="2"/></ControlTemplate></Thumb.Template></Thumb></Track.Thumb>
+            <Track.IncreaseRepeatButton><RepeatButton Style="{StaticResource SliderTrackButton}" Background="{StaticResource MeterTrack}" Command="{x:Static Slider.IncreaseLarge}"/></Track.IncreaseRepeatButton>
+          </Track>
+        </Border>
+        <ControlTemplate.Triggers><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="SliderFocus" Property="BorderBrush" Value="{StaticResource FocusGreen}"/></Trigger></ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="Rail" TargetType="Button" BasedOn="{StaticResource Action}">
+      <Setter Property="Height" Value="68"/><Setter Property="Width" Value="68"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/><Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+      <Setter Property="FontSize" Value="26"/><Setter Property="Padding" Value="0"/>
+      <Setter Property="Background" Value="Transparent"/><Setter Property="Margin" Value="0,0,0,12"/>
+    </Style>
+  </Window.Resources>
+  <!-- A cena tem a proporcao da tela; SceneLayout.cs define tamanho e margem segura, entao o Viewbox so aplica a escala. -->
+  <Viewbox Stretch="Uniform">
+    <Grid x:Name="Scene" Width="1920" Height="1080" Background="{StaticResource Backdrop}">
+      <Border x:Name="DismissArea" Background="Transparent"/>
+      <!-- Camada final: so a faixa de status e a barra, a mesma distancia das bordas da tela. -->
+      <Grid x:Name="SafeArea" Margin="32">
+        <!-- Faixa de status: icones de rede e bateria a esquerda da hora grande, com o pe na linha de base dos digitos.
+             A margem de baixo dos icones (altura da linha menos a linha de base) e calculada em StartStatus. -->
+        <StackPanel x:Name="StatusArea" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+          <StackPanel x:Name="StatusIcons" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,20,0">
+            <StackPanel.LayoutTransform><ScaleTransform ScaleX="1.15" ScaleY="1.15"/></StackPanel.LayoutTransform>
+          </StackPanel>
+          <TextBlock x:Name="Clock" FontSize="46" FontWeight="SemiBold" VerticalAlignment="Top" Margin="0,0,-2,0"/>
+        </StackPanel>
+        <!-- A esquerda e no centro vertical: cresce e encolhe a partir do centro com a altura do conteudo (no minimo a do trilho,
+             no maximo a area segura). O fundo transparente impede que o vao entre trilho e painel oculte a barra. -->
+        <Grid x:Name="Sidebar" HorizontalAlignment="Left" VerticalAlignment="Center" Background="Transparent">
+          <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="16"/><ColumnDefinition Width="480"/></Grid.ColumnDefinitions>
+          <design:MotionHeightSurface x:Name="HeightSurface" Grid.ColumnSpan="3" Visibility="Collapsed" IsHitTestVisible="False"/>
+          <!-- RailItems descansa (menor e apagado) com o foco no painel; ver Motion.cs (RailFocus). -->
+          <Border x:Name="RailFrame" Background="{StaticResource SurfaceRail}" BorderBrush="{StaticResource Divider}" BorderThickness="1" CornerRadius="22" Padding="11,18">
+            <DockPanel x:Name="RailItems">
+              <!-- Configuracoes e energia ficam presas ao pe do trilho; energia e o ultimo item. -->
+              <StackPanel x:Name="RailBottom" DockPanel.Dock="Bottom">
+                <Button x:Name="Settings" Style="{StaticResource Rail}" Content="&#xE713;" ToolTip="Configurações" Tag="settings"/>
+                <Button x:Name="Power" Style="{StaticResource Rail}" Content="&#xE7E8;" ToolTip="Controle e energia" Tag="power" Margin="0"/>
+              </StackPanel>
+              <StackPanel x:Name="RailTop">
+                <Button x:Name="Home" Style="{StaticResource Rail}" Content="&#xE80F;" ToolTip="Início" Tag="home"/>
+                <Button x:Name="Library" Style="{StaticResource Rail}" Content="&#xE8F1;" ToolTip="Biblioteca" Tag="library"/>
+                <Border Height="1" Background="{StaticResource Divider}" Margin="10,4,10,20"/>
+                <Button x:Name="Sound" Style="{StaticResource Rail}" Content="&#xE767;" ToolTip="Som" Tag="sound"/>
+                <Button x:Name="Amd" Style="{StaticResource Rail}" Content="&#xE714;" ToolTip="Gravação" Tag="amd"/>
+                <Button x:Name="Performance" Style="{StaticResource Rail}" Content="&#xE9D9;" ToolTip="Desempenho" Tag="performance"/>
+                <Button x:Name="AmdTuning" Style="{StaticResource Rail}" ToolTip="AMD" Tag="amd-tuning">
+                  <Viewbox Width="24" Height="24"><Path Stretch="Uniform" Data="M0,0 L36,0 36,36 25.5,25.5 25.5,10.5 10.5,10.5 Z M10.5,14.9 L0,25.5 0,36 10.5,36 21.1,25.5 10.5,25.5 Z"
+                    Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Viewbox>
+                </Button>
+              </StackPanel>
+            </DockPanel>
+          </Border>
+          <Border x:Name="PanelFrame" Grid.Column="2" Background="{StaticResource SurfacePanel}" BorderBrush="{StaticResource Divider}" BorderThickness="1" CornerRadius="22" Padding="28">
+            <Grid x:Name="PanelContent">
+              <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+              <TextBlock x:Name="PanelTitle" Text="Início" FontSize="33" FontWeight="SemiBold" Margin="0,0,0,20"/>
+              <!-- Overscan de desenho compensado no conteudo: mesmas medidas, foco ampliado sem recorte. -->
+              <ScrollViewer x:Name="BodyScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False" Padding="-6,-2,-2,-2">
+                <StackPanel x:Name="PanelBody" Margin="6,2,6,2"/>
+              </ScrollViewer>
+              <!-- Rodape so aparece com retorno de uma acao ou o nome do icone em foco. -->
+              <Border x:Name="FeedbackFrame" Grid.Row="2" Background="{StaticResource SurfaceCard}" CornerRadius="10" Padding="12" Margin="0,12,0,0">
+                <Border.Style><Style TargetType="Border"><Style.Triggers>
+                  <DataTrigger Binding="{Binding Text, ElementName=Feedback}" Value=""><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                </Style.Triggers></Style></Border.Style>
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                  <TextBlock x:Name="FeedbackIcon" FontFamily="Segoe MDL2 Assets" FontSize="17" Margin="0,2,10,0" VerticalAlignment="Top"/>
+                  <TextBlock x:Name="Feedback" Grid.Column="1" Text="" Foreground="{StaticResource TextPrimary}" FontSize="15" TextWrapping="Wrap"/>
+                </Grid>
+              </Border>
+            </Grid>
+          </Border>
+        </Grid>
+      </Grid>
+      <Canvas x:Name="MotionOverlay" IsHitTestVisible="False" ClipToBounds="True"/>
+      <!-- Dica suplementar na propria cena: segue o DPI/escala e nao usa o popup branco do WPF. -->
+      <Canvas x:Name="DescriptionOverlay" IsHitTestVisible="False" ClipToBounds="True">
+        <Border x:Name="DescriptionTip" Visibility="Collapsed" Background="{StaticResource DescriptionSurface}"
+                BorderBrush="{StaticResource DescriptionBorder}" BorderThickness="1" CornerRadius="4" Padding="12,8"
+                MaxWidth="360" SnapsToDevicePixels="True" UseLayoutRounding="True">
+          <Border.Effect><DropShadowEffect Color="Black" BlurRadius="16" ShadowDepth="4" Opacity="0.24"/></Border.Effect>
+          <TextBlock x:Name="DescriptionText" FontFamily="Segoe UI Variable, Segoe UI" FontSize="16" FontWeight="Normal"
+                     Foreground="{StaticResource DescriptionForeground}" TextWrapping="Wrap" LineHeight="22"
+                     TextOptions.TextFormattingMode="Display"/>
+        </Border>
+      </Canvas>
+    </Grid>
+  </Viewbox>
+</Window>
