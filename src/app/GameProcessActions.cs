@@ -235,7 +235,10 @@ namespace XGBP.Design
                 }
                 return;
             }
-            if (gamesView != null && gamesView.Activity(closingGame) == null && (verify && closingActivity == null || gameHasExited(closingActivity) == true))
+            var left = gamesView == null ? null : gamesView.Activity(closingGame);
+            // A copia sem identidade do proprio jogo nao segura a confirmacao quando a identidade original ja saiu (ADR 0090).
+            if (gamesView != null && (left == null || SourceExiting(closingActivity, left)) && (verify && closingActivity == null ||
+                gameHasExited(closingActivity) == true))
             {
                 WriteLog("jogos: fechado | " + closingGame);
                 if (gameCloseFeedback != null) FinishFeedback(gameCloseFeedback, closingName + " fechado.", FeedbackKind.Success);

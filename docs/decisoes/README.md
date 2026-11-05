@@ -93,6 +93,12 @@ Cada decisão importante fica num arquivo `NNNN-titulo.md`. Uma decisão aceita 
 | [0086](0086-versao-2.0.0-e-entrega-em-exe.md) | Versão 2.0.0 em `.exe` e `bin/app`, com backup das pastas 1.0.8; perfis por jogo da AMD suspensos | Publicada; teste físico pendente |
 | [0087](0087-teclado-automatico-so-com-modo-xbox-estavel.md) | Teclado automático só com o modo Xbox lido na hora e estável; campo herdado do desktop não abre | Publicada na 2.0.2; teste físico pendente |
 | [0088](0088-versao-2.0.2-e-entrega-em-exe-e-bin-app.md) | Versão 2.0.2 em `.exe` e `bin/app`, inicialização na 2.0.2, backup das pastas 2.0.0 | Publicada; teste físico pendente |
+| [0089](0089-jogo-filho-do-lancador-de-atalho.md) | Atalho externo sem mapeamento adota o jogo aberto como filho do alvo (unlocker); janela do filho só sem janela do alvo | Aceita; ainda não lançada |
+| [0090](0090-jogo-em-encerramento-nao-e-outro-jogo.md) | Processo do jogo em encerramento (sem caminho/criação) não conta como outro jogo: o retorno ao Início não é cancelado | Aceita; ainda não lançada |
+| [0091](0091-barra-de-tarefas-oculta-no-modo-xbox.md) | Ocultação automática da barra de tarefas ligada no modo Xbox e devolvida no desktop, com marcador de recuperação | Aceita; ainda não lançada |
+| [0092](0092-volume-do-app-em-foco-ao-abrir.md) | Som do app em foco pela metade enquanto a barra está aberta, com diário para restaurar depois de queda | Aceita; ainda não lançada |
+| [0093](0093-status-ao-lado-do-painel-nas-telas-steam.md) | Sobre o Big Picture, sem relógio e com rede/bateria ao lado do título do painel | Aceita; ainda não lançada |
+| [0094](0094-bateria-de-fones-bluetooth.md) | Bateria de fones Bluetooth (Hands-Free) lida da propriedade do Windows, na faixa de status e nas Conexões | Aceita; ainda não lançada |
 
 ## Modelo
 

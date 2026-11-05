@@ -48,6 +48,14 @@ namespace XGBP.Audio
             return s.ToString();
         }
     }
+    // Volume de uma sessao de app: instancia (viva agora) e identificador persistente do app naquela saida.
+    public sealed class SessionLevel
+    {
+        public string DeviceId, SessionId, SessionKey;
+        public uint ProcessId;
+        public float Level;
+    }
+
     public sealed class AudioChange
     {
         // endpoint-volume, endpoint-mute, session-volume, session-mute, default
@@ -230,6 +238,73 @@ namespace XGBP.Audio
                 });
                 if (matched == 0) throw new InvalidOperationException("A sessão de áudio foi encerrada. Atualize o mixer.");
             }
+        }
+
+        // Sessoes de saida dos processos indicados (ou do mesmo executavel), em todas as saidas ativas.
+        // pids == null le todas, para a recuperacao depois de uma queda (ADR 0092). Sons do sistema ficam de fora.
+        public static List<SessionLevel> SessionLevels(ICollection<uint> pids, string executable)
+        {
+            var result = new List<SessionLevel>();
+            var paths = new Dictionary<uint, string>();
+            using (var scope = new ComScope())
+            {
+                var e = Enumerator(scope);
+                IMMDeviceCollection collection; e.EnumAudioEndpoints(0, 1, out collection); scope.Own(collection);
+                uint count; collection.GetCount(out count);
+                for (uint i = 0; i < count; i++) using (var ds = new ComScope())
+                {
+                    IMMDevice d; collection.Item(i, out d); ds.Own(d);
+                    string id; d.GetId(out id);
+                    try
+                    {
+                        VisitSessions(d, delegate(IAudioSessionControl2 c, ISimpleAudioVolume v) {
+                            int state; c.GetState(out state); if (state == 2 || c.IsSystemSoundsSession() == 0) return;
+                            uint pid; c.GetProcessId(out pid); if (pid == 0) return;
+                            if (pids != null && !pids.Contains(pid))
+                            {
+                                string path;
+                                if (!paths.TryGetValue(pid, out path)) paths[pid] = path = ProcessPath(pid);
+                                if (string.IsNullOrEmpty(executable) || !string.Equals(path, executable, StringComparison.OrdinalIgnoreCase)) return;
+                            }
+                            var item = new SessionLevel { DeviceId = id, ProcessId = pid };
+                            c.GetSessionInstanceIdentifier(out item.SessionId); c.GetSessionIdentifier(out item.SessionKey);
+                            v.GetMasterVolume(out item.Level);
+                            result.Add(item);
+                        });
+                    }
+                    catch (COMException) { } // saida removida durante a leitura
+                }
+            }
+            return result;
+        }
+        // Aplica o nivel de cada sessao pela identidade da instancia; devolve quantas ainda existiam.
+        public static int SetSessionLevels(IList<SessionLevel> items)
+        {
+            var byDevice = new Dictionary<string, Dictionary<string, float>>(StringComparer.Ordinal);
+            foreach (var item in items)
+            {
+                if (item.Level < 0 || item.Level > 1 || float.IsNaN(item.Level)) throw new ArgumentOutOfRangeException("Level");
+                Dictionary<string, float> sessions;
+                if (!byDevice.TryGetValue(item.DeviceId, out sessions)) byDevice[item.DeviceId] = sessions = new Dictionary<string,
+                    float>(StringComparer.Ordinal);
+                sessions[item.SessionId] = item.Level;
+            }
+            int matched = 0;
+            using (var scope = new ComScope())
+            {
+                var e = Enumerator(scope); Guid context = Context;
+                foreach (var pair in byDevice) using (var ds = new ComScope())
+                {
+                    IMMDevice d;
+                    try { d = Device(e, pair.Key, ds); } catch (Exception) { continue; } // saida desconectada
+                    VisitSessions(d, delegate(IAudioSessionControl2 c, ISimpleAudioVolume v) {
+                        string id; c.GetSessionInstanceIdentifier(out id); float level;
+                        if (id == null || !pair.Value.TryGetValue(id, out level)) return;
+                        v.SetMasterVolume(level, ref context); matched++;
+                    });
+                }
+            }
+            return matched;
         }
 
         static void SetDefault(IMMDeviceEnumerator e, IMMDevice d, AudioChange change)

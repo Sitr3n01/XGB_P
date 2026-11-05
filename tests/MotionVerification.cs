@@ -124,6 +124,8 @@ namespace XGBP.Design
             motionSystemOverride = false; Hide(); Show(); PumpMotion(60); Hide();
             MotionAssert(motionClocks.Count == 0 && !motionTicker.IsEnabled, "animacao sobreviveu oculta");
             // Abrir do zero desloca os filhos diretos do corpo; acionar um deles pelo clique derrubava a previa (crash de 2026-10-24 09:32).
+            // A linha conferida precisa estar na area visivel ao abrir: a pagina pode ter ficado rolada no fim (ADRs 0091/0092).
+            ((ScrollViewer)MotionPart("BodyScroll")).ScrollToVerticalOffset(0); window.UpdateLayout();
             Show(); PumpMotion(350); lastSettingsUri = null;
             var row = (Button)actions.Find(c => (string)c.Tag == "windows-settings");
             MotionAssert(row.Parent == body && row.RenderTransform is TransformGroup && MotionScale(row) != null, "abertura do zero trocou a escala da linha das Configuracoes");

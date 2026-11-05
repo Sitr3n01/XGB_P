@@ -35,6 +35,22 @@ namespace XGBP.Design
             }
             return uncertain ? null : (bool?)true;
         }
+        // Um processo que encerra continua listado por instantes sem caminho nem criacao. Em 04/11 (11:51, 12:16, 15:29)
+        // essa copia do Genshin contou como outro jogo aberto e cancelou o retorno com o Big Picture ja na frente.
+        // Mesma chave e somente identidades conhecidas da origem, ou PIDs dela lidos sem criacao: e a propria origem saindo.
+        static bool SourceExiting(GameActivity source, GameActivity candidate)
+        {
+            if (source == null || candidate == null || candidate.Key != source.Key || candidate.Processes.Count == 0) return false;
+            foreach (var p in candidate.Processes)
+            {
+                bool same = p.Known ? source.Processes.Exists(s => s.Pid == p.Pid && s.Created == p.Created)
+                    : source.Processes.Exists(s => s.Pid == p.Pid && s.Known);
+                if (!same) return false;
+            }
+            return true;
+        }
+        bool OtherOpenGame(GameActivity source, GameActivity candidate)
+        { return !SameGameInstance(candidate, source) && !SourceExiting(source, candidate) && gameHasExited(candidate) != true; }
         bool GameWasForeground(GameActivity activity)
         {
             if (activity.Window == null) return false;
@@ -47,7 +63,8 @@ namespace XGBP.Design
             if (activationMode != true || disposed || systemPowerBusy) return;
             gameExitRoute = new GameExitRoute { Source = source, Ready = ready, Epoch = gameNavigationEpoch,
                 Mode = activationEpoch, Deadline = feedbackNow().AddSeconds(ready ? 8 : 20) };
-            if (gamesView != null) gameExitRoute.KnownOthers.AddRange(gamesView.Activities.FindAll(a => !SameGameInstance(a, source)));
+            if (gamesView != null) gameExitRoute.KnownOthers.AddRange(gamesView.Activities.FindAll(a => !SameGameInstance(a, source) && !SourceExiting(source,
+                a)));
             gameTransitionTimer.Start();
             WriteLog("jogos: retorno apos saida armado | " + source.Key + "; saidaConfirmada=" + ready);
         }
@@ -55,14 +72,21 @@ namespace XGBP.Design
         {
             if (!fresh || readVersion < gameCommandVersion) return;
             var before = observedForegroundGame;
-            if (before == null && gamesView != null && gamesView.Activities.Count == 1 && next.Activities.Count == 0)
+            if (before == null && gamesView != null && gamesView.Activities.Count == 1 &&
+                (next.Activities.Count == 0 || next.Activities.Count == 1 && SourceExiting(gamesView.Activities[0], next.Activities[0])))
                 before = gamesView.Activities[0];
             var remaining = before == null ? null : next.Activity(before.Key);
             if (before != null && !SameGameInstance(before, remaining))
             {
-                observedForegroundGame = null; // Consumir uma vez, mesmo quando o usuario ja abriu outro app/barra.
-                if (gameExitRoute == null && closingGame == null && gameTransition == null && !window.IsVisible &&
-                    gameHasExited(before) == true) ArmGameExitRoute(before, true);
+                bool? exited = gameHasExited(before);
+                // Encerramento em andamento: guardar a identidade original e conferir de novo na proxima leitura (ADR 0090).
+                if (exited != true && SourceExiting(before, remaining)) observedForegroundGame = before;
+                else
+                {
+                    observedForegroundGame = null; // Consumir uma vez, mesmo quando o usuario ja abriu outro app/barra.
+                    if (gameExitRoute == null && closingGame == null && gameTransition == null && !window.IsVisible &&
+                        exited == true) ArmGameExitRoute(before, true);
+                }
             }
             if (foregroundPid != 0)
             {
@@ -83,7 +107,7 @@ namespace XGBP.Design
                 // O shell pode entregar a Steam antes de o observador confirmar a saida do ultimo jogo.
                 // Aceitar somente essa janela exata como destino; outro app continua cancelando.
                 bool otherKnown = route.KnownOthers.Exists(a => gameHasExited(a) != true) || gamesView != null &&
-                    gamesView.Activities.Exists(a => !SameGameInstance(a, route.Source) && gameHasExited(a) != true);
+                    gamesView.Activities.Exists(a => OtherOpenGame(route.Source, a));
                 var home = otherKnown ? null : findBigPicture();
                 route.HomeWindow = home != null && existingWindowAvailable(home.Window) ? home.Window : null;
                 if (front != IntPtr.Zero && front != handle && !gameFallback(front) &&
@@ -109,7 +133,7 @@ namespace XGBP.Design
                     appAvailable(a.Window) && (!a.Paused || pausedByPreview.ContainsKey(a.Key)));
                 if (target != null) { StartGameExitDestination(route, target); return; }
                 // Processo aberto sem janela ou pausado por outra ferramenta nao equivale a nenhum jogo aberto.
-                bool otherOpen = gamesView.Activities.Exists(a => !SameGameInstance(a, route.Source) && gameHasExited(a) != true);
+                bool otherOpen = gamesView.Activities.Exists(a => OtherOpenGame(route.Source, a));
                 if (!otherOpen) otherOpen = route.KnownOthers.Exists(a => gameHasExited(a) != true);
                 if (otherOpen)
                 { Feedback("Há outro jogo aberto, mas sua janela ou pausa exige intervenção antes do retorno.", FeedbackKind.Attention); StopGameExitRoute("destino indisponivel"); return; }

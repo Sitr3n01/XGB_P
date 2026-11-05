@@ -4,6 +4,18 @@ All notable changes to XGB_P are documented here. The format follows [Keep a Cha
 
 ## [Unreleased]
 
+### Added
+
+- **Hide the taskbar in the Xbox mode.** Taskbars that stay registered as an app bar while the Xbox mode hides them (for example Start11's) left desktop apps short of the full screen. On a confirmed Xbox mode the bar turns on the Windows taskbar auto-hide through the public app bar API and turns it off again on the desktop. It only undoes what it did: an auto-hide you already had stays, and turning it off yourself during the Xbox mode wins. A local marker undoes the change after a crash. Settings → MODO XBOX → *Ocultar a barra de tarefas*, on by default ([ADR 0091](docs/decisoes/0091-barra-de-tarefas-oculta-no-modo-xbox.md)).
+- **Lower the focused app while the bar is open.** Opening the bar halves the mixer volume of the game or app in front (all processes of a game, plus sessions of the same executable) with a short ramp, and closing it restores the level. A change made in the mixer while the bar is open is kept. Windows remembers per-app volume, so a journal restores an app that closed, or a bar that crashed, while the level was lowered. Settings → *Abaixar o som do app ao abrir*, on by default ([ADR 0092](docs/decisoes/0092-volume-do-app-em-foco-ao-abrir.md)).
+- **Bluetooth headset battery.** Headsets that report their level to Windows over Hands-Free show a headset icon and battery in the status strip and the level in Connections → Bluetooth devices. The value is read from the device property Windows keeps; nothing is sent to the headset. Only connected headsets are shown, because Windows keeps the last level after a disconnect ([ADR 0094](docs/decisoes/0094-bateria-de-fones-bluetooth.md)).
+- **Status strip over the Big Picture.** The Big Picture already shows its own clock in the same corner as the bar's status strip. When the bar opens with any Big Picture screen in front, it hides its own clock and moves network and battery next to the panel title. Over a game or a desktop app, the strip stays in the corner with the clock ([ADR 0093](docs/decisoes/0093-status-ao-lado-do-painel-nas-telas-steam.md)).
+
+### Fixed
+
+- **Back to Home after a slow exit.** A game that took a couple of seconds to quit stayed listed without a path or creation time while it was exiting. The return to the Big Picture Home took that copy for another open game and cancelled. The exiting copy of the same game no longer counts as another game, for the return, the exit confirmation, an exit from the game's own menu and *Fechar jogo e iniciar* ([ADR 0090](docs/decisoes/0090-jogo-em-encerramento-nao-e-outro-jogo.md)).
+- **Games started by a launcher.** An external Steam shortcut whose target starts the game as a child process (such as a frame rate unlocker) adopts the unclaimed children of the target, so the game's window, focus, pause and close work without a manual mapping ([ADR 0089](docs/decisoes/0089-jogo-filho-do-lancador-de-atalho.md)).
+
 ## [2.1.0] — 2026-11-04
 
 First public release. The application behaves exactly like 2.0.2; this version changes how it is built, verified and shipped.

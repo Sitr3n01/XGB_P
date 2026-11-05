@@ -283,6 +283,9 @@
               </Border>
             </Grid>
           </Border>
+          <!-- Telas da Steam (ADR 0093): rede e bateria saem do canto e ficam ao lado do titulo do painel, porque o
+               Big Picture ja mostra a hora. Ancora sem tamanho no canto do painel: nao muda a largura da barra. -->
+          <Canvas x:Name="SteamStatusAnchor" Grid.Column="2" Width="0" Height="0" HorizontalAlignment="Right" VerticalAlignment="Top" IsHitTestVisible="False"/>
         </Grid>
       </Grid>
       <Canvas x:Name="MotionOverlay" IsHitTestVisible="False" ClipToBounds="True"/>

@@ -60,7 +60,8 @@ namespace XGBP.Design
                 if (route.Closing != null || closingGame != null || gameBusy != null || steamInputPending || ButtonsStillHeld()) return;
                 if (!gamesSnapshotFresh || gamesSnapshotVersion < gameCommandVersion || gamesView == null) return;
                 // Uma instancia nova, inclusive PID reutilizado, nao foi autorizada para fechamento.
-                if (gamesView.Activities.Exists(a => !route.Sources.Exists(source => SameGameInstance(source, a))))
+                // A copia sem identidade de um jogo que encerra continua sendo ele (ADR 0090).
+                if (gamesView.Activities.Exists(a => !route.Sources.Exists(source => SameGameInstance(source, a) || SourceExiting(source, a))))
                 { CancelGameLaunchRoute("A lista de jogos mudou. Confira os jogos abertos antes de iniciar outro."); return; }
                 foreach (var source in route.Sources)
                 {

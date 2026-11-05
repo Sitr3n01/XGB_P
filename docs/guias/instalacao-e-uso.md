@@ -49,6 +49,12 @@ Abra o `XGB_P.exe` pelo Explorer. O app começa na bandeja, com uma instância p
 
 **Administrador.** Steam e DSX costumam rodar elevados, e o Windows não deixa um app comum trazer o foco de volta sobre eles. Ligue **Sempre executar como administrador** em Configurações se a barra abrir sem foco; a elevação sempre passa pelo UAC.
 
+**Barra de tarefas no modo Xbox.** Algumas barras de tarefas (a do Start11, por exemplo) somem no modo Xbox, mas continuam reservando o espaço delas na tela. Com **Ocultar a barra de tarefas** ligado (Configurações → MODO XBOX, ligado por padrão), o XGB_P liga a ocultação automática da barra de tarefas do Windows ao entrar no modo Xbox e devolve ao sair. Se você já usava a ocultação automática, ela fica como está.
+
+**Som do app ao abrir a barra.** Com **Abaixar o som do app ao abrir** ligado (padrão), o jogo ou app em foco toca na metade do volume enquanto a barra está aberta e volta ao fechar. Uma mudança feita no mixer com a barra aberta vale como escolha sua.
+
+**Baterias.** A faixa de status mostra a bateria do DualSense (o físico, não o virtual do DSX) e a de fones Bluetooth que informam o nível ao Windows, só enquanto estão conectados. Sobre as telas do Big Picture, que já mostram a hora, a barra esconde a dela e leva rede e baterias para o lado do título do painel.
+
 **Win+G** abre a Game Bar original do Windows. Ele só abre o XGB_P com uma ponte local que não é distribuída.
 
 **Abra pelo Explorer, por um atalho ou pela inicialização do Windows,** e não a partir de um app empacotado (como apps de assistentes de IA). Esses apps virtualizam o `%LOCALAPPDATA%` dos processos que iniciam: o XGB_P aberto por eles grava numa cópia privada dos dados e é encerrado quando o app é atualizado.
@@ -61,7 +67,7 @@ Abra o `XGB_P.exe` pelo Explorer. O app começa na bandeja, com uma instância p
 
 | Local | Conteúdo |
 |---|---|
-| `%LOCALAPPDATA%\XGB_P\settings` | Preferências |
+| `%LOCALAPPDATA%\XGB_P\settings` | Preferências e, só quando há o que restaurar, `barra-tarefas-modo-xbox.txt` e `volume-reduzido.json` |
 | `%LOCALAPPDATA%\XGB_P\games` | Catálogo, histórico e diário de pausas |
 | `%LOCALAPPDATA%\XGB_P\history` | Histórico de ações (7 dias, até 300) |
 | `%LOCALAPPDATA%\XGB_P\sons` | Sons da interface, opcionais (abaixo) |
@@ -81,7 +87,7 @@ Para voltar, repita com o executável anterior. Os dados em `%LOCALAPPDATA%\XGB_
 
 ## Desinstalar
 
-1. Desligue **Iniciar com o Windows** nas Configurações e encerre o app.
+1. Desligue **Iniciar com o Windows** nas Configurações e encerre o app fora do modo Xbox, para ele devolver a barra de tarefas e o volume dos apps. Se a barra de tarefas ficar oculta, desligue a ocultação em Configurações → Personalização → Barra de tarefas.
 2. Remova o executável do HidHide com `--app-unreg`.
 3. Apague a pasta do app e, se quiser, `%LOCALAPPDATA%\XGB_P`.
 

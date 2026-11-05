@@ -131,7 +131,7 @@ namespace XGBP.Design
             StartScene();
             handle = new WindowInteropHelper(window).EnsureHandle();
             MarkOverlayWindow();
-            StartLaunchSettings(); // Preferencias precisam estar carregadas antes de decidir a ponte Win+G.
+            StartLaunchSettings(); StartTaskbar(); StartAppVolume(); StartSteamStatus(); // antes da ponte Win+G e do modo (ADRs 0091-0093)
             StartActivation();
             if (!verify)
             {
@@ -194,7 +194,7 @@ namespace XGBP.Design
             // A barra tem prioridade sobre o teclado virtual: ele some e volta quando ela devolver o foco (ADR 0052).
             if (fresh) SuspendKeyboard();
             // O app em primeiro plano antes de abrir (normalmente o jogo) tem prioridade no FPS.
-            if (fresh) CapturePreviousWindow();
+            if (fresh) { CapturePreviousWindow(); ReduceAppVolumeOnOpen(); UpdateStatusPlacement(); } // ADRs 0092 e 0093
             if (fresh && !verify) PlaceWindow();
             if (fresh) { CheckSounds(); Sound("abrir"); foregroundSinceOpen = elevationHintShown = steamInputDoneThisOpening = false; foregroundRetryAt = DateTime.MinValue; steamGuideOpening = steamGuidePending; }
             ClearHeld(); window.Show(); window.Activate();
@@ -214,7 +214,7 @@ namespace XGBP.Design
         }
         void Hide(bool restorePrevious = false)
         {
-            mediaEditing = null;
+            mediaEditing = null; if (window.IsVisible) RestoreAppVolumeOnClose("barra fechada"); // o som volta antes de adiar pela Steam
             CancelAppSwitch("Troca de janela cancelada pelo fechamento da barra.");
             if (DeferHideForSteamInput(restorePrevious)) return;
             if (window.IsVisible) ReleasePreviousWindow(restorePrevious);
@@ -478,7 +478,7 @@ namespace XGBP.Design
             VerifyMedia();
             VerifyMediaConflicts();
             VerifyPerf();
-            VerifyBattery(); VerifyStatus();
+            VerifyBattery(); VerifyStatus(); VerifyHeadsetStatus();
             VerifySteamActions();
             VerifyWindowFocus();
             VerifySteamInput();
@@ -500,8 +500,8 @@ namespace XGBP.Design
             VerifyController();
             VerifyActivation();
             VerifyDesktopWinG();
-            VerifyGamePersistence();
-            VerifyExitGamingMode();
+            VerifyGamePersistence(); VerifyLauncherChildren();
+            VerifyExitGamingMode(); VerifyTaskbarAutoHide(); VerifyAppVolume(); VerifySteamStatus();
             VerifyKeyboard();
             VerifyAccentTheme();
             VerifyScene();
@@ -528,7 +528,7 @@ namespace XGBP.Design
             if (disposed) return;
             CancelCapturePhoto();
             disposed = true;
-            CancelGameNavigation("XGB_P encerrando.");
+            CancelGameNavigation("XGB_P encerrando."); RestoreAppVolumeNow();
             CancelSteamNavigation();
             FlushAppearancePreferences();
             FlushActionHistory(true);

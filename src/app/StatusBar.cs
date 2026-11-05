@@ -48,6 +48,7 @@ namespace XGBP.Design
             networkIcon = new Canvas { Width = 26, Height = 20, VerticalAlignment = VerticalAlignment.Bottom };
             batterySlot = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Bottom };
             icons.Children.Add(networkIcon); icons.Children.Add(batterySlot);
+            StartHeadsets(icons); // fone Bluetooth depois do controle (ADR 0094)
             // O pe dos icones fica na linha de base dos digitos: sobe da base da linha o espaco abaixo da linha de base.
             var margin = icons.Margin; margin.Bottom = ClockDescent(); icons.Margin = margin;
             // A faixa sobe o espaco interno da fonte: o topo dos digitos fica na margem segura, alinhado ao topo da barra.
@@ -80,7 +81,7 @@ namespace XGBP.Design
         {
             ((TextBlock)window.FindName("Clock")).Text = DateTime.Now.ToString("HH:mm");
             SelectBattery();
-            UpdateStatusIcons(); NetworkTick();
+            UpdateStatusIcons(); NetworkTick(); HeadsetTick();
         }
 
         void NetworkTick()
@@ -198,24 +199,28 @@ namespace XGBP.Design
         }
 
         FrameworkElement BatteryIcon(Battery b)
+        { return BatteryGlyph(b.Percent, b.ChargeState == 1, out batteryFill, out batteryBolt, out batteryMark); }
+        // Desenho comum da bateria (DualSense e fones Bluetooth); percent < 0 e erro de leitura.
+        FrameworkElement BatteryGlyph(int percent, bool charging, out Shapes.Rectangle fill, out Shapes.Path bolt, out TextBlock mark)
         {
-            bool error = b.Percent < 0, charging = b.ChargeState == 1;
+            bool error = percent < 0; fill = null; bolt = null; mark = null;
             string outline = error ? "Critical" : "TextPrimary";
             var shell = new Border { Width = 23, Height = 13, BorderThickness = new Thickness(1.6), BorderBrush = Brush(outline), CornerRadius = new CornerRadius(2.5),
                 Padding = new Thickness(1.6) };
             if (error)
             {
-                batteryMark = new TextBlock { Text = "!", FontSize = 10, FontWeight = FontWeights.Bold, Foreground = Brush("Critical"),
+                mark = new TextBlock { Text = "!", FontSize = 10, FontWeight = FontWeights.Bold, Foreground = Brush("Critical"),
                     HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, -3, 0, -3) };
-                shell.Child = batteryMark;
+                shell.Child = mark;
             }
             else
             {
                 // Carga baixa fica em destaque enquanto o controle nao esta carregando.
                 double inner = 23 - 3.2 - 3.2;
-                batteryFill = new Shapes.Rectangle { HorizontalAlignment = HorizontalAlignment.Left, RadiusX = 1, RadiusY = 1,
-                    Width = Math.Max(1.5, inner * Math.Min(100, b.Percent) / 100.0), Fill = Brush(charging ? "AccentText" : b.Percent <= 15 ? "Critical" : "TextPrimary") };
-                shell.Child = batteryFill;
+                fill = new Shapes.Rectangle { HorizontalAlignment = HorizontalAlignment.Left, RadiusX = 1, RadiusY = 1,
+                    Width = Math.Max(1.5, inner * Math.Min(100, percent) / 100.0), Fill = Brush(charging ? "AccentText" : percent <= 15 ? "Critical" :
+                        "TextPrimary") };
+                shell.Child = fill;
             }
             var nub = new Border { Width = 2.4, Height = 5.5, Background = Brush(outline), CornerRadius = new CornerRadius(0, 1.2, 1.2, 0), VerticalAlignment = VerticalAlignment.Center };
             var body = new StackPanel { Orientation = Orientation.Horizontal }; body.Children.Add(shell); body.Children.Add(nub);
@@ -226,9 +231,9 @@ namespace XGBP.Design
                 // Selo discreto ao lado, sem cobrir o nivel: raio limpo, sem animacao continua.
                 var badge = new Border { Width = 11, Height = 11, Background = Brush("SurfaceRail"), CornerRadius = new CornerRadius(5.5),
                     HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, -3, -2) };
-                batteryBolt = new Shapes.Path { Data = Geometry.Parse("M 5.8,0 L 0.8,5.4 H 3.5 L 2.5,10 L 7.5,4.3 H 4.8 Z"), Fill = Brush("AccentText"),
+                bolt = new Shapes.Path { Data = Geometry.Parse("M 5.8,0 L 0.8,5.4 H 3.5 L 2.5,10 L 7.5,4.3 H 4.8 Z"), Fill = Brush("AccentText"),
                     Width = 7, Height = 9, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-                badge.Child = batteryBolt; icon.Children.Add(badge);
+                badge.Child = bolt; icon.Children.Add(badge);
             }
             return icon;
         }
@@ -339,7 +344,12 @@ namespace XGBP.Design
             window.Width = 1920; window.Height = 1080; window.Left = -30000; window.Top = -30000;
             window.Show(); SetPanel(0); statusDrawn = null; UpdateStatusIcons(); ((TextBlock)window.FindName("Clock")).Text = DateTime.Now.ToString("HH:mm");
             window.UpdateLayout(); SaveRender("status-real"); window.Hide();
+            string headsetLine;
+            try { var found = BluetoothBattery.Headsets(); headsetLine = found.Count + " com bateria; " + found.FindAll(h => h.Connected).Count +
+                " conectado(s)"; }
+            catch (Exception ex) { headsetLine = "leitura falhou | " + ex.Message; }
             File.WriteAllText(System.IO.Path.Combine(Output, "status-real.txt"), "rede: " + networkState.Describe() + Environment.NewLine +
+                "fones bluetooth (so leitura das propriedades do Windows): " + headsetLine + Environment.NewLine +
                 "controle: " + (has ? batteryDevice + " | " + batteryText : batteryText) + Environment.NewLine +
                 "fontes observadas: " + snapshot.Count + " (apenas origens fisicas recentes podem representar a bateria)" + Environment.NewLine, Encoding.UTF8);
             WriteLog("faixa de status: leitura real concluida (rede e bateria, so leitura)");

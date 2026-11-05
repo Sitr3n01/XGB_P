@@ -44,11 +44,13 @@ namespace XGBP.Design
             bool allowed = current == true || current == false && launchPreferences.DesktopWinG;
             if (!activationStarted || changedMode || activationDesktopPreference != launchPreferences.DesktopWinG)
             {
-                if (!activationStarted || changedMode) activationModeSince = controllerNow();
+                bool modeEvent = !activationStarted || changedMode;
+                if (modeEvent) activationModeSince = controllerNow();
                 activationStarted = true; activationMode = current; activationDesktopPreference = launchPreferences.DesktopWinG;
                 activationEpoch++; ClearHeld(); ClearGuide(); StopActivationObserver();
                 if (changedMode || !allowed) { if (window.IsVisible) Hide(); }
                 if (changedMode) KeyboardModeChanged();
+                if (modeEvent) TaskbarModeChanged(current); // ADR 0091
                 if (allowed)
                 {
                     if (activationObserver != null && activationSubscription == null)

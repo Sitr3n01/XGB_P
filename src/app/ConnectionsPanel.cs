@@ -153,10 +153,12 @@ namespace XGBP.Design
             AddHistorySetting();
             Caption("MODO XBOX");
             AddExitGamingMode();
+            AddTaskbarSetting();
             Caption("ABERTURA");
             body.Children.Add(Text(GuideName + " ou Win + G", 27, "AccentText"));
             body.Children.Add(Text("No modo Xbox, " + GuideName + " ou Win+G. No desktop, somente Win+G com a opção abaixo ligada.", 15, "Muted"));
             AddLaunchSettings();
+            AddAppVolumeSetting();
             AddSoundSetting();
             AddMotionSetting();
             Caption("SOBRE");
@@ -289,7 +291,7 @@ namespace XGBP.Design
             else foreach (var entry in btDevices)
             {
                 var d = entry; string tag = "bt-" + d.Key;
-                var row = ConnectionButton(body, d.Name, (d.Connected ? "Conectado" : "Desconectado") + " · " + d.Kind, tag, delegate { ToggleMenu(tag); });
+                var row = ConnectionButton(body, d.Name, BluetoothDetail(d), tag, delegate { ToggleMenu(tag); });
                 if (d.Connected) ((TextBlock)((Grid)row.Content).Children[1]).Foreground = Brush("AccentText");
                 if (connectionMenu == tag) DeviceMenu(d, on);
             }

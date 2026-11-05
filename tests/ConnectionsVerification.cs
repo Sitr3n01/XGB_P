@@ -178,7 +178,8 @@ namespace XGBP.Design
             btDevices = Bluetooth.Read();
             lines.Add("Bluetooth: pareados " + btDevices.Count + " | conectados " + btDevices.FindAll(d => d.Connected).Count + " | com audio controlavel " + btDevices.FindAll(d => d.AudioControl).Count +
                 " | controles " + btDevices.FindAll(d => d.Controller).Count);
-            foreach (var d in btDevices) lines.Add("  tipo " + d.Kind + " | conectado " + d.Connected + " | audio " + d.AudioControl + " | entradas " + d.Ids.Count);
+            foreach (var d in btDevices) lines.Add("  tipo " + d.Kind + " | conectado " + d.Connected + " | audio " + d.AudioControl + " | entradas " + d.Ids.Count +
+                " | bateria guardada " + (d.Battery >= 0 ? d.Battery + "%" : "sem leitura"));
             // Luz noturna: so leitura; a ida e volta do blob acontece em memoria e precisa reproduzir o original (fora o carimbo).
             byte[] blob = NightLight.ReadData(); nightLight = NightLight.Parse(blob); nightKnown = true; string roundTrip = "sem teste";
             if (nightLight != null)

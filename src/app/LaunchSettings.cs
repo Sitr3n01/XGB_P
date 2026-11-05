@@ -18,6 +18,13 @@ namespace XGBP.Design
         [DataMember(IsRequired = true)] public int Version = 1;
         [DataMember(IsRequired = true)] public bool AlwaysAdmin;
         [DataMember(EmitDefaultValue = false)] public bool DesktopWinG;
+        // Comportamentos ligados por padrao; o arquivo guarda so a escolha de desligar (ADRs 0091 e 0092).
+        [DataMember(EmitDefaultValue = false)] public bool KeepTaskbar;
+        [DataMember(EmitDefaultValue = false)] public bool KeepAppVolume;
+        public LaunchPreferenceState Copy()
+        {
+            return new LaunchPreferenceState { AlwaysAdmin = AlwaysAdmin, DesktopWinG = DesktopWinG, KeepTaskbar = KeepTaskbar, KeepAppVolume = KeepAppVolume };
+        }
     }
     static class LaunchSettings
     {
@@ -141,7 +148,7 @@ namespace XGBP.Design
         }
         void ToggleAlwaysAdmin()
         {
-            var next = new LaunchPreferenceState { AlwaysAdmin = !launchPreferences.AlwaysAdmin, DesktopWinG = launchPreferences.DesktopWinG };
+            var next = launchPreferences.Copy(); next.AlwaysAdmin = !launchPreferences.AlwaysAdmin;
             try
             {
                 launchWrite(next); launchPreferences = next; RebuildSettings("launch-admin");
@@ -151,7 +158,7 @@ namespace XGBP.Design
         }
         void ToggleDesktopWinG()
         {
-            var next = new LaunchPreferenceState { AlwaysAdmin = launchPreferences.AlwaysAdmin, DesktopWinG = !launchPreferences.DesktopWinG };
+            var next = launchPreferences.Copy(); next.DesktopWinG = !launchPreferences.DesktopWinG;
             try
             {
                 launchWrite(next); launchPreferences = next;

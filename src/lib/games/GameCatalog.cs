@@ -17,6 +17,9 @@ namespace XGBP.Games
         public string IconLocation, IconKey, IconSource;
         public byte[] IconPng;
         public bool Available;
+        // Atalho externo sem RuntimePaths explicito: o alvo pode ser um lancador (unlocker, wrapper proprio) que abre o
+        // jogo como filho. A sessao adota os filhos sem dono do alvo; a janela deles so vale se o alvo nao tiver uma (ADR 0089).
+        public bool AdoptChildren;
         public long Imported, Observed;
         public string UnavailableReason;
         public long LastPlayed { get { return Math.Max(Imported, Observed); } }
@@ -223,7 +226,7 @@ namespace XGBP.Games
                 var e = new GameEntry { Key = "shortcut:" + profile + ":" + id, Profile = profile, Source = "Steam · externo", Name = n.Text("appname"),
                     LaunchFile = exe, WorkingDirectory = dir, LaunchUri = ShortcutUri(id), IconLocation = n.Text("icon"), Kind = wrapper ? "Unknown" : "Game",
                     Imported = GameFiles.ValidTime(n.Text("LastPlayTime"), DateTime.UtcNow) };
-                if (!wrapper && File.Exists(exe)) e.RuntimePaths = CachedRuntime(Path.GetDirectoryName(exe), exe, shortcuts);
+                if (!wrapper && File.Exists(exe)) { e.RuntimePaths = CachedRuntime(Path.GetDirectoryName(exe), exe, shortcuts); e.AdoptChildren = true; }
                 var mapping = Find(settings, e.Key); if (mapping != null && mapping.Hidden) continue;
                 if (mapping != null) Apply(e, mapping); state.Entries.Add(e);
             }
@@ -236,7 +239,8 @@ namespace XGBP.Games
             if (!string.IsNullOrEmpty(m.LaunchFile)) e.LaunchFile = GameFiles.Normalize(m.LaunchFile);
             if (m.Arguments != null) e.Arguments = m.Arguments;
             if (!string.IsNullOrEmpty(m.WorkingDirectory)) e.WorkingDirectory = GameFiles.Normalize(m.WorkingDirectory);
-            if (m.RuntimePaths != null) e.RuntimePaths = Array.ConvertAll(m.RuntimePaths, GameFiles.Normalize);
+            // Executavel do jogo declarado: vale so ele, sem adotar descendentes (ADR 0019).
+            if (m.RuntimePaths != null) { e.RuntimePaths = Array.ConvertAll(m.RuntimePaths, GameFiles.Normalize); e.AdoptChildren = false; }
             if (m.RequiredFiles != null) e.RequiredFiles = Array.ConvertAll(m.RequiredFiles, GameFiles.Normalize);
             if (m.IconLocation != null) e.IconLocation = m.IconLocation;
         }

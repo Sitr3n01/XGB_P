@@ -33,11 +33,11 @@ O XGB_P é a barra que falta nessa configuração: um toque no PS abre a barra s
 |---|---|
 | **Início** | Todos os jogos abertos (o atual primeiro), com pausar, retomar e fechar pela identidade do processo; alternância de apps com segurar para fechar; três jogos recentes; player de mídia da sessão ativa; acesso rápido |
 | **Biblioteca** | Abre o Steam Big Picture direto em *Coleções → Todos*, por um canal local rápido quando o cliente da Steam é reconhecido |
-| **Som** | Saída de áudio, volume e mute, mixer por aplicativo, microfone, fontes de mídia e posição da faixa |
+| **Som** | Saída de áudio, volume e mute, mixer por aplicativo, microfone, fontes de mídia e posição da faixa. Com a barra aberta, o jogo ou app em foco toca na metade do volume |
 | **Gravação** | Repetição instantânea, foto e gravação do Radeon ReLive pela ferramenta de comandos da própria AMD; últimas capturas com miniaturas |
 | **Desempenho** | Sensores do HWiNFO, FPS do RTSS e modo de energia do Windows. Dado ausente aparece como indisponível, nunca como número inventado |
 | **AMD** | Ajustes gráficos globais pelo ADLX do driver: FSR 4, geração de quadros, Fluid Motion Frames, Super Resolution, Anti-Lag, Boost, Chill, limite de FPS, nitidez e Enhanced Sync |
-| **Configurações** | Wi-Fi e Bluetooth, Luz noturna, DSX, bateria do DualSense (o físico, não o virtual), ícones dos botões, inicialização, sons da interface, movimento reduzido, histórico de atividade e saída do modo Xbox |
+| **Configurações** | Wi-Fi e Bluetooth (com a bateria de fones), Luz noturna, DSX, bateria do DualSense (o físico, não o virtual), ícones dos botões, inicialização, sons da interface, movimento reduzido, histórico de atividade, saída do modo Xbox e ocultar a barra de tarefas no modo Xbox |
 | **Energia** | Suspender, reiniciar e desligar, cada um com uma segunda confirmação com foco em *Cancelar* |
 
 Um **teclado virtual** que nunca rouba o foco digita no app da frente pelo `SendInput`, controlado pelo controle. No modo Xbox, ele abre sozinho quando um campo de texto recebe o foco.

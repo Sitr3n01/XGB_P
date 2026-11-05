@@ -33,11 +33,11 @@ XGB_P is the bar that setup is missing: one press of PS opens it over the game, 
 |---|---|
 | **Home** | Every open game (current first) with pause, resume and close by process identity; app switcher with hold-to-close; three recent games; media player for the active session; quick access |
 | **Library** | Opens Steam Big Picture straight at *Collections → All*, through a fast local channel when the Steam client is recognized |
-| **Sound** | Output device, volume and mute, per-app mixer, microphone, media sources and seek |
+| **Sound** | Output device, volume and mute, per-app mixer, microphone, media sources and seek. While the bar is open, the focused game or app plays at half volume |
 | **Recording** | Radeon ReLive instant replay, screenshot and recording through AMD's own command tool; latest captures with thumbnails |
 | **Performance** | HWiNFO sensors, RTSS frame rate and the Windows power mode. Missing data shows as unavailable, never as a made-up number |
 | **AMD** | Global graphics settings through the driver's ADLX: FSR 4, frame generation, Fluid Motion Frames, Super Resolution, Anti-Lag, Boost, Chill, frame limit, sharpening, Enhanced Sync |
-| **Settings** | Wi-Fi and Bluetooth, Night light, DSX, DualSense battery (physical, not the virtual pad), button icons, startup, interface sounds, reduced motion, activity history, leaving the Xbox mode |
+| **Settings** | Wi-Fi and Bluetooth (with headset battery), Night light, DSX, DualSense battery (physical, not the virtual pad), button icons, startup, interface sounds, reduced motion, activity history, leaving the Xbox mode, hiding the taskbar in the Xbox mode |
 | **Power** | Suspend, restart and shut down, each behind a second confirmation focused on *Cancel* |
 
 A **virtual keyboard** that never takes focus types into the app in front through `SendInput`, driven by the controller. In the Xbox mode it opens by itself when a text field gets focus.
