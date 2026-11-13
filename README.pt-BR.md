@@ -152,7 +152,7 @@ O executável não tem assinatura Authenticode, então o SmartScreen pode avisar
 Em aberto, e acompanhado no [roadmap](docs/roadmap.md):
 
 - **A matriz física no modo Xbox:** Steam, DSX, jogos reais, pesquisa de programas, teclado sobre jogos, G HUB, o botão de mudo do DSX, a TV e DPI. Ações de energia reais e uma TV real não foram ensaiadas nesta versão.
-- **A CI no GitHub.** A última execução no `main`, ainda na 2.1.0, falhou porque o Windows limita a janela ao tamanho da tela; no runner, a barra era montada menor que os 1920 × 1080 pedidos pelas suítes. A build de testes agora tira esse limite e sempre monta as suítes no tamanho pedido. A correção passa localmente, inclusive com uma tela de 1024 × 768 emulada, mas ainda não rodou no GitHub.
+- **A CI no GitHub.** A última execução no `main`, ainda na 2.1.0, falhou porque o Windows limita a janela ao tamanho da tela; no runner, a barra era montada menor que os 1920 × 1080 pedidos pelas suítes. A build de testes agora tira esse limite e sempre monta as suítes no tamanho pedido; uma segunda dependência, das animações do Windows, foi corrigida do mesmo jeito. As duas correções passam localmente com uma tela de 1024 × 768 e as animações desligadas emuladas.
 - **O registro de retomadas** trata o PS visto depois de uma retomada como correlação, nunca como prova de que o controle acordou o PC.
 
 O app foi feito para uma configuração e testado numa máquina (Ryzen 7 7700X, Radeon RX 9070 XT, Windows 11 build 26300). A integração com a Steam lê arquivos locais da própria Steam, que não são um contrato público e podem mudar a qualquer atualização.

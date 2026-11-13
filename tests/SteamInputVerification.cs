@@ -112,7 +112,9 @@ namespace XGBP.Design
                     var sidebar = MotionPart("Sidebar"); var item = motionClocks.Find(c => c.Target == sidebar && c.Property == UIElement.OpacityProperty);
                     return item == null ? 0 : item.Clock.Timeline.Duration.TimeSpan.TotalMilliseconds;
                 };
-                motionTesting = true;
+                // Animacoes do Windows ligadas por substituto: numa maquina com elas desligadas a barra entra sem animacao.
+                var systemMotion = motionSystemOverride;
+                motionTesting = true; motionSystemOverride = false;
                 try
                 {
                     foreground = game.Window.Handle; open(); foreground = handle; double slow = entrance(); Hide();
@@ -120,7 +122,7 @@ namespace XGBP.Design
                     Show(); double normal = entrance(); Hide();
                     check(slow == MotionEntrance && normal == MotionEntrance, "entrada de 250 ms com e sem espera da Steam");
                 }
-                finally { motionTesting = false; StopMotion(); }
+                finally { motionTesting = false; motionSystemOverride = systemMotion; StopMotion(); }
                 steamInputRun = inline;
 
                 // Console da Steam ilegivel: a liberacao sai depois do limite, mesmo sem confirmacao.

@@ -152,7 +152,7 @@ The executable is not Authenticode-signed, so SmartScreen may warn on first laun
 Still open, and tracked in the [roadmap](docs/roadmap.md):
 
 - **The physical matrix in the Xbox mode:** Steam, DSX, real games, program search, the keyboard over games, G HUB, the DSX mute button, the TV and DPI. Real power actions and a real TV were not exercised for this version.
-- **CI on GitHub.** The last run on `main`, still 2.1.0, failed because Windows limits a window to the screen, so on the runner the bar was laid out smaller than the 1920 × 1080 the suites ask for. The test build now lifts that limit and always lays the suites out at the requested size. The fix passes locally, including with a 1024 × 768 screen emulated, but has not run on GitHub yet.
+- **CI on GitHub.** The last run on `main`, still 2.1.0, failed because Windows limits a window to the screen, so on the runner the bar was laid out smaller than the 1920 × 1080 the suites ask for. The test build now lifts that limit and always lays the suites out at the requested size; a second dependency, on the Windows animation setting, was fixed the same way. Both fixes pass locally with a 1024 × 768 screen and animations off emulated.
 - **The PS wake trace** records a PS seen after a resume as a correlation, never as proof that the controller woke the PC.
 
 The app is built for one setup and tested on one machine (Ryzen 7 7700X, Radeon RX 9070 XT, Windows 11 build 26300). The Steam integration reads Steam's own local files, which are not a public contract and can change with any Steam update.

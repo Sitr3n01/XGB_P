@@ -84,7 +84,9 @@ O ponto de falha muda com o código e com o tamanho da tela; nenhuma das falhas 
 
 **Correção (só na build de testes).** `tests/VerificationScene.cs` adiciona, na criação do HWND, um gancho que eleva o `ptMaxTrackSize` do `MINMAXINFO`. O gancho do WPF roda depois e lê o valor elevado, então a janela aceita o tamanho pedido. Em seguida a janela vai para 1920 × 1080. `SceneLayout.StartScene` registra o gancho dentro de `#if XGB_VERIFY`; o `XGB_P.exe` não muda e continua cobrindo o monitor principal. Em `tests/MotionVerification.cs`, uma asserção nova confere que a janela chega a 1920 × 1080 e a 3840 × 2160. Antes, nesta máquina, o caso "4K" rodava de fato em 1940 × 1100.
 
-**Validação em 13/11.** `verificar-ci.ps1` foi aprovado na árvore real (`bin/ci-tela-fixa-20261113`). A cópia com a tela emulada passou nos três modos da CI. A execução no GitHub fica para o próximo push.
+**Validação em 13/11.** `verificar-ci.ps1` foi aprovado na árvore real (`bin/ci-tela-fixa-20261113`). A cópia com a tela emulada passou nos três modos da CI.
+
+**Segunda dependência: animações do Windows.** No PR #2, com a tela corrigida, o mesmo job passou do ponto anterior e falhou em "Steam Input: entrada de 250 ms com e sem espera da Steam". A barra respeita a opção do Windows de animar controles (`SystemParameters.ClientAreaAnimation`, em `Motion.SystemMotionOff`). Com ela desligada, não há animação de entrada e a duração lida é 0. As outras suítes de animação já forçam `motionSystemOverride = false`; a do Steam Input não forçava. Numa cópia descartável, simular as animações desligadas (com a tela de 1024 × 768 emulada) reproduziu exatamente esse erro. Isso indica que o runner tem as animações desligadas, sem que a configuração dele tenha sido conferida. A correção em `tests/SteamInputVerification.cs` força as animações ligadas durante essa asserção e restaura o valor anterior. Com as duas emulações juntas, `--verify-motion`, `--verify-performance` e `--verify-release` passaram, e `verificar-ci.ps1` foi aprovado na árvore real (`bin/ci-animacoes-20261113`).
 
 ## Pendências de lançamento
 
