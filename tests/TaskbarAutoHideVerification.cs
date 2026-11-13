@@ -1,4 +1,6 @@
-// Verificacao da barra de tarefas no modo Xbox (ADR 0091): barra, area, modo e preferencias substituidos.
+// Modo Xbox sem o espaco da barra de tarefas: barras como a do Start11 somem no modo Xbox mas continuam
+// reservando a area de trabalho (04/11: trabalho 0,0-1920,1030). A barra liga a ocultacao automatica do
+// Windows ao entrar no modo Xbox confirmado e devolve ao sair. O marcador local desfaz depois de uma queda (ADR 0091).
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -43,8 +45,8 @@ namespace XGBP.Design
 
                 state = false; TaskbarModeChanged(true); state = null; TaskbarModeChanged(false);
                 check(File.Exists(taskbarMarker), "leitura incerta na saida preserva o marcador para a proxima confirmacao");
-                state = true; TaskbarModeChanged(false); check(state == false && !File.Exists(taskbarMarker),
-                    "marcador preservado restaura na confirmacao seguinte");
+            state = true; TaskbarModeChanged(false); check(state == false && !File.Exists(taskbarMarker),
+                "marcador preservado restaura na confirmacao seguinte");
                 state = true; File.WriteAllText(taskbarMarker, "queda", Encoding.UTF8); sets = 0; TaskbarModeChanged(false);
                 check(sets == 1 && state == false && !File.Exists(taskbarMarker), "abertura no desktop com marcador desfaz a mudanca de uma queda");
 
@@ -52,8 +54,7 @@ namespace XGBP.Design
                 check(sets == 0 && state == false, "opcao desligada mantem a barra como esta");
                 launchPreferences = new LaunchPreferenceState(); fail = true; TaskbarModeChanged(true);
                 check(sets == 1 && state == false, "falha do Windows ao ligar nao interrompe a barra");
-                fail = false; TaskbarModeChanged(false); check(!File.Exists(taskbarMarker) && sets == 1,
-                    "falha anterior nao deixa marcador ativo depois do desktop");
+fail = false; TaskbarModeChanged(false); check(!File.Exists(taskbarMarker) && sets == 1, "falha anterior nao deixa marcador ativo depois do desktop");
 
                 Show(); SetPanel(5); window.UpdateLayout(); mode = true; state = false; sets = 0;
                 var toggle = actions.Find(c => (string)c.Tag == "xbox-taskbar") as SettingToggle;

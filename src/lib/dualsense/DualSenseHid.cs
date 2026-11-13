@@ -303,7 +303,7 @@ namespace XGBP.Input
     // Procura DualSense a cada ScanIntervalMs (trocar o modo do DSX cria/remove o virtual), le cada um numa
     // thread e publica os eventos. Com Deduplicate, o mesmo evento vindo de dois dispositivos (fisico + virtual
     // do DSX) em ate DedupeWindowMs vira um so.
-    public sealed class DualSenseMonitor
+    public sealed partial class DualSenseMonitor
     {
         public event Action<string> Log;
         public event Action<ButtonEvent> ButtonChanged;
@@ -334,7 +334,7 @@ namespace XGBP.Input
                 {
                     try { Scan(true); }
                     catch (Exception ex) { try { Emit("varredura falhou: " + ex.Message); } catch (Exception) { } }
-                } while (!stop.WaitOne(ScanIntervalMs));
+                } while (!WaitNextScan());
             });
             scanner.IsBackground = true;
             scanner.Start();
@@ -376,7 +376,7 @@ namespace XGBP.Input
                     try { ReadLoop(d); }
                     finally
                     {
-                        d.Close(); lock (known) known.Remove(d.Path);
+                        ForgetResumeDevice(d); d.Close(); lock (known) known.Remove(d.Path);
                         lock (threads) threads.Remove(Thread.CurrentThread);
                         try { var lost = DeviceLost; if (lost != null) lost(d.Label); }
                         catch (Exception ex) { try { Emit("notificacao de perda falhou: " + ex.Message); } catch (Exception) { } }
@@ -384,7 +384,7 @@ namespace XGBP.Input
                 });
                 t.IsBackground = true;
                 lock (threads) threads.Add(t);
-                t.Start();
+                TrackResumeDevice(d); t.Start();
             }
         }
 

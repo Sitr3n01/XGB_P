@@ -16,14 +16,17 @@ namespace XGBP.Design
                 }));
         public Action<double> Changed;
         public Brush Rail, Panel;
+        public double RailWidth = 92, PanelLeft = 108, PanelWidth = 480;
         public Pen Outline;
         public double Value { get { return (double)GetValue(ValueProperty); } }
         protected override Size MeasureOverride(Size availableSize) { return new Size(); }
         protected override void OnRender(DrawingContext drawing)
         {
             double height = Math.Max(1, Value), top = (RenderSize.Height - height) / 2;
-            drawing.DrawRoundedRectangle(Rail, Outline, new Rect(.5, top + .5, 91, Math.Max(0, height - 1)), 21.5, 21.5);
-            drawing.DrawRoundedRectangle(Panel, Outline, new Rect(108.5, top + .5, 479, Math.Max(0, height - 1)), 21.5, 21.5);
+            if (RailWidth > 0) drawing.DrawRoundedRectangle(Rail, Outline,
+                new Rect(.5, top + .5, Math.Max(0, RailWidth - 1), Math.Max(0, height - 1)), 21.5, 21.5);
+            drawing.DrawRoundedRectangle(Panel, Outline,
+                new Rect(PanelLeft + .5, top + .5, Math.Max(0, PanelWidth - 1), Math.Max(0, height - 1)), 21.5, 21.5);
         }
     }
 
@@ -124,6 +127,8 @@ namespace XGBP.Design
             MotionPart("RailBottom").RenderTransform = HeightTransform(heightBottomTransform, heightBottomShift);
             MotionPart("FeedbackFrame").RenderTransform = HeightTransform(heightFooterTransform, heightFooterShift);
             var surface = HeightSurface;
+            surface.RailWidth = railFrame.Visibility == Visibility.Visible ? railFrame.ActualWidth : 0;
+            surface.PanelLeft = panelFrame.TranslatePoint(new Point(), sidebar).X; surface.PanelWidth = panelFrame.ActualWidth;
             surface.Rail = heightRailBackground; surface.Panel = heightPanelBackground; surface.Outline = new Pen(heightPanelBorder.CloneCurrentValue(), 1);
             if (surface.Outline.CanFreeze) surface.Outline.Freeze();
             surface.Changed = PresentHeight; heightPresenting = true; surface.Visibility = Visibility.Visible;

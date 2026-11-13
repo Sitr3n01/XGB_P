@@ -52,7 +52,8 @@ namespace XGBP.Design
             layer.Rows.Add(Strip(false));
             var top = new List<KeyDef> { Esc(1.5) };
             string[][] numbers = { new[] { "1" }, new[] { "2" }, new[] { "3", "é", "è", "ê", "ë", "€" }, new[] { "4" }, new[] { "5" },
-                new[] { "6", "ý", "ÿ" }, new[] { "7", "ú", "ù", "û", "ü" }, new[] { "8", "í", "ì", "î", "ï" }, new[] { "9", "ó", "ò", "ô", "õ", "ö", "º" }, new[] { "0" } };
+                new[] { "6", "ý", "ÿ" }, new[] { "7", "ú", "ù", "û", "ü" }, new[] { "8", "í", "ì", "î", "ï" }, new[] { "9", "ó", "ò", "ô", "õ", "ö", "º" }, new[] { "0" }
+                    };
             string row1 = "qwertyuiop";
             for (int i = 0; i < row1.Length; i++) { var key = Char(row1[i].ToString(), numbers[i]); key.Corner = numbers[i][0]; top.Add(key); }
             top.Add(Backspace(1.5));
@@ -105,14 +106,15 @@ namespace XGBP.Design
             for (int i = 1; i <= 12; i++) functions.Add(new KeyDef { Id = "f" + i, Label = "F" + i, Kind = KeyKind.Key, Vk = (ushort)(TextInput.F1 + i - 1) });
             layer.Rows.Add(functions);
             layer.Rows.Add(new List<KeyDef> {
-                Tab(1.5), Named("insert", "Ins", TextInput.Insert, 1.5), Nav("home", "Home", null, TextInput.Home, 1.5), Nav("pageup", "PgUp", null, TextInput.PageUp, 1.5),
+                Tab(1.5), Named("insert", "Ins", TextInput.Insert, 1.5), Nav("home", "Home", null, TextInput.Home, 1.5), Nav("pageup", "PgUp", null, TextInput.PageUp,
+                    1.5),
                 Named("printscreen", "PrtSc", TextInput.Snapshot, 1.5), Named("apps", "Menu", TextInput.Apps, 1.5), Backspace(4) });
             var delete = Named("delete", "Del", TextInput.Delete, 1.5); delete.Repeat = true;
             layer.Rows.Add(new List<KeyDef> {
                 ShiftKey("shift-left"), delete, Nav("end", "End", null, TextInput.End, 1.5), Nav("pagedown", "PgDn", null, TextInput.PageDown, 1),
                 Nav("up", null, "", TextInput.Up, 1), Enter(6.5) });
             layer.Rows.Add(new List<KeyDef> {
-                LayerKey("layer-letters", "abc", "letters", "L2"), Modifier("ctrl", "Ctrl", KeyModifiers.Ctrl, "R2"), Modifier("win", "⊞", KeyModifiers.Win, null),
+            LayerKey("layer-letters", "abc", "letters", "L2"), Modifier("ctrl", "Ctrl", KeyModifiers.Ctrl, "R2"), Modifier("win", "⊞", KeyModifiers.Win, null),
                 Modifier("alt", "Alt", KeyModifiers.Alt, null), Nav("left", null, "", TextInput.Left, 1), Nav("down", null, "", TextInput.Down, 1),
                 Nav("right", null, "", TextInput.Right, 1), SpaceKey(5.5) });
             return Finish(layer);
@@ -134,14 +136,15 @@ namespace XGBP.Design
         static List<KeyDef> Header()
         {
             return new List<KeyDef> {
-                new KeyDef { Id = "keyboard-settings", Label = "Configurações do teclado", Kind = KeyKind.Action, Command = "settings", Width = .6, Strip = true },
+            new KeyDef { Id = "keyboard-settings", Label = "Configurações do teclado", Kind = KeyKind.Action, Command = "settings", Width = .6, Strip = true },
                 new KeyDef { Id = "close", Kind = KeyKind.Action, Command = "close", Width = .6, Strip = true } };
         }
         static List<KeyDef> Space(KeyDef layerKey)
         {
             return new List<KeyDef> {
-                layerKey, Modifier("ctrl", "Ctrl", KeyModifiers.Ctrl, "R2"), Modifier("win", "⊞", KeyModifiers.Win, null), Modifier("alt", "Alt", KeyModifiers.Alt, null),
-                SpaceKey(5.5), new KeyDef { Id = "dictation", Glyph = "", Kind = KeyKind.Action, Command = "dictation", Hint = "mic" },
+layerKey, Modifier("ctrl", "Ctrl", KeyModifiers.Ctrl, "R2"), Modifier("win", "⊞", KeyModifiers.Win, null), Modifier("alt", "Alt", KeyModifiers.Alt, null),
+                SpaceKey(5.5), new KeyDef { Id = "dictation", Glyph = "", Kind = KeyKind.Action, Command = "dictation" },
+                    // sem dica de botao: o MUTE e do DSX (ADR 0107)
                 Nav("left", null, "", TextInput.Left, 1, "L1"), Nav("right", null, "", TextInput.Right, 1, "R1") };
         }
         static KeyDef Char(string text, string[] alternates, string shifted = null)
@@ -150,16 +153,23 @@ namespace XGBP.Design
         }
         static KeyDef Esc(double width) { return new KeyDef { Id = "esc", Label = "Esc", Kind = KeyKind.Key, Vk = TextInput.Escape, Width = width }; }
         static KeyDef Tab(double width) { return new KeyDef { Id = "tab", Label = "Tab", Kind = KeyKind.Key, Vk = TextInput.Tab, Width = width }; }
-        static KeyDef Backspace(double width) { return new KeyDef { Id = "backspace", Glyph = "", Kind = KeyKind.Key, Vk = TextInput.Back, Width = width, Repeat = true, Hint = "□" }; }
-        static KeyDef Enter(double width) { return new KeyDef { Id = "enter", Glyph = "", Kind = KeyKind.Key, Vk = TextInput.Return, Width = width, Hint = "≡" }; }
-        static KeyDef SpaceKey(double width) { return new KeyDef { Id = "space", Label = "", Kind = KeyKind.Key, Vk = TextInput.Space, Width = width, Hint = "△" }; }
-        static KeyDef ShiftKey(string id) { return new KeyDef { Id = id, Label = "⇧", Kind = KeyKind.Modifier, Modifiers = KeyModifiers.Shift, Width = 1.5, Hint = "L3" }; }
-        static KeyDef Modifier(string id, string label, KeyModifiers modifier, string hint) { return new KeyDef { Id = id, Label = label, Kind = KeyKind.Modifier, Modifiers = modifier, Hint = hint }; }
-        static KeyDef LayerKey(string id, string label, string command, string hint) { return new KeyDef { Id = id, Label = label, Kind = KeyKind.Layer, Command = command, Width = 1.5, Hint = hint }; }
-        static KeyDef Named(string id, string label, ushort vk, double width) { return new KeyDef { Id = id, Label = label, Kind = KeyKind.Key, Vk = vk, Width = width }; }
+        static KeyDef Backspace(double width) { return new KeyDef { Id = "backspace", Glyph = "", Kind = KeyKind.Key, Vk = TextInput.Back, Width = width, Repeat
+            = true, Hint = "□" }; }
+        static KeyDef Enter(double width) { return new KeyDef { Id = "enter", Glyph = "", Kind = KeyKind.Key, Vk = TextInput.Return, Width = width, Hint = "≡" };
+            }
+        static KeyDef SpaceKey(double width) { return new KeyDef { Id = "space", Label = "", Kind = KeyKind.Key, Vk = TextInput.Space, Width = width, Hint = "△"
+            }; }
+        static KeyDef ShiftKey(string id) { return new KeyDef { Id = id, Label = "⇧", Kind = KeyKind.Modifier, Modifiers = KeyModifiers.Shift, Width = 1.5, Hint =
+            "L3" }; }
+        static KeyDef Modifier(string id, string label, KeyModifiers modifier, string hint) { return new KeyDef { Id = id, Label = label, Kind = KeyKind.Modifier,
+            Modifiers = modifier, Hint = hint }; }
+        static KeyDef LayerKey(string id, string label, string command, string hint) { return new KeyDef { Id = id, Label = label, Kind = KeyKind.Layer, Command =
+            command, Width = 1.5, Hint = hint }; }
+        static KeyDef Named(string id, string label, ushort vk, double width) { return new KeyDef { Id = id, Label = label, Kind = KeyKind.Key, Vk = vk, Width =
+            width }; }
         static KeyDef Nav(string id, string label, string glyph, ushort vk, double width, string hint = null)
         {
-            return new KeyDef { Id = id, Label = label, Glyph = glyph, Kind = KeyKind.Key, Vk = vk, Width = width, Repeat = true, Navigation = true, Hint = hint };
+    return new KeyDef { Id = id, Label = label, Glyph = glyph, Kind = KeyKind.Key, Vk = vk, Width = width, Repeat = true, Navigation = true, Hint = hint };
         }
         static KeyDef Combo(string id, string label, string glyph, ushort vk, KeyModifiers modifiers)
         {
@@ -176,7 +186,7 @@ namespace XGBP.Design
                 foreach (var key in row) { key.Left = left; left += key.Width; }
                 // Cabecalho e atalhos tem espaco vazio. A navegacao usa suas posicoes visuais reais.
                 if (r < 2) row[row.Count - 1].Left = RowUnits - row[row.Count - 1].Width;
-                else if (Math.Abs(left - RowUnits) > .001) throw new InvalidOperationException("Linha do teclado " + layer.Name + " com " + left + " unidades.");
+        else if (Math.Abs(left - RowUnits) > .001) throw new InvalidOperationException("Linha do teclado " + layer.Name + " com " + left + " unidades.");
             }
             return layer;
         }

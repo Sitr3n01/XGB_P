@@ -1,5 +1,7 @@
 # Home: jogos recentes e acesso rápido
 
+**Revisão atual — 3.0.0:** Início → Voltar ao jogo → Acesso rápido (quatro retângulos sem texto e seis quadrados) → Aplicativos abertos → Jogos recentes → player. Apps ficam centralizados enquanto couberem. O mesmo conteúdo atende trilho e título com seta; a preferência fica nas Configurações. Ver [ADRs 0099, 0105 e 0112](../decisoes/README.md) e a [atualização pública](../atualizacao-publica-2026-11-08.md). As seções abaixo preservam o histórico de design.
+
 **Publicada na 1.0.6 (ADR 0072):** depois da saída nativa, a Home pode mostrar “Aguardando a Steam concluir a sessão anterior…”. A abertura aguarda confirmação da sessão Steam por até 45 segundos, inclusive ao escolher um recente após fechamento manual. Sem confirmação, cancela. Entrega e teste físico pendente.
 
 **Revisão da ADR 0070 — publicada na 1.0.5, 28/10:** ao escolher outro jogo, a confirmação usa somente texto: **Fechar jogo e iniciar** e **Cancelar**, inicialmente focado. O novo jogo só abre após saída confirmada dos jogos identificados na pergunta. Ao fechar o último jogo ou a barra sem jogo ativo, no modo Xbox, o destino é o Início do Big Picture. Abrir pelo PS continua mostrando a barra. Prévia, testes e limites.

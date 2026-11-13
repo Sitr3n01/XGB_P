@@ -62,9 +62,9 @@ namespace XGBP.Design
                 audioPending.Clear();
                 mediaSwitch.Focus(); Activate(); window.UpdateLayout();
                 if (mediaShown != "Video.exe#0" || mediaNext.IsEnabled || mediaVolume.IsEnabled || Keyboard.FocusedElement != mediaSwitch) throw new Exception("Falha: trocar fonte.");
-                // O player fica acima do acesso rapido; subir pula os controles que a fonte nao oferece.
-                FocusHome("utility-downloads"); Navigate("CIMA");
-                if (Keyboard.FocusedElement != mediaSwitch) throw new Exception("Falha: subir ate as opcoes do player.");
+                // O player encerra a Home; baixo fica nas opcoes e subir pula controles que a fonte nao oferece (ADR 0097).
+                mediaSwitch.Focus(); Navigate("BAIXO");
+                if (Keyboard.FocusedElement != mediaSwitch) throw new Exception("Falha: fim da Home deve manter foco nas opcoes do player.");
                 Navigate("CIMA"); Navigate("CIMA");
                 if (Keyboard.FocusedElement != mediaPlay) throw new Exception("Falha: subir ate reproduzir pulando controles inativos.");
                 Navigate("CIMA");

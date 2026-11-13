@@ -1,4 +1,4 @@
-// Contratos da V.2.1.0: nenhum efeito de energia real nos testes.
+// Contratos da V.3.0.0: nenhum efeito de energia real nos testes.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -105,7 +105,7 @@ namespace XGBP.Design
                 failed = false;
                 try { SystemPower.Execute((SystemPowerAction)99, launch, delegate { return true; }); } catch (ArgumentOutOfRangeException) { failed = true; }
                 check(failed && launched == 2, "acao invalida falha antes de lancar processo");
-                Show(); SetPanel(4); RequestSystemPower(SystemPowerAction.Shutdown); SettleMotion(); window.UpdateLayout(); SaveRender("energia-confirmacao-2.1.0"); Back();
+                Show(); SetPanel(4); RequestSystemPower(SystemPowerAction.Shutdown); SettleMotion(); window.UpdateLayout(); SaveRender("energia-confirmacao-3.0.0"); Back();
                 File.WriteAllLines(Path.Combine(Output, "energia-verificacao.txt"), checks, Encoding.UTF8);
             }
             finally
@@ -130,12 +130,12 @@ namespace XGBP.Design
                 lines.Add("OK: painel " + page + " sem rotulos de prototipo ou simulacao.");
             }
             SetPanel(5);
-            if (!BodyHas("XGB_P · V.2.1.0") || BodyHas("Painel inicial · Início") || window.Title != "XGB_P") throw new Exception("Marca ou preferencias sem efeito na superficie final.");
+            if (!BodyHas("XGB_P · V.3.0.0") || BodyHas("Painel inicial · Início") || window.Title != "XGB_P") throw new Exception("Marca ou preferencias sem efeito na superficie final.");
             var version = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
-            if (version.ProductVersion != "2.1.0" || version.FileVersion != "2.1.0.0") throw new Exception("Versao de produto divergente.");
-            lines.Add("OK: marca, versao 2.1.0 e ausencia de preferencia sem efeito.");
-            SettleMotion(); window.UpdateLayout(); SaveRender("configuracoes-2.1.0");
-            ((ScrollViewer)window.FindName("BodyScroll")).ScrollToEnd(); window.UpdateLayout(); SaveRender("configuracoes-sobre-2.1.0");
+            if (version.ProductVersion != "3.0.0" || version.FileVersion != "3.0.0.0") throw new Exception("Versao de produto divergente.");
+            lines.Add("OK: marca, versao 3.0.0 e ausencia de preferencia sem efeito.");
+            SettleMotion(); window.UpdateLayout(); SaveRender("configuracoes-3.0.0");
+            ((ScrollViewer)window.FindName("BodyScroll")).ScrollToEnd(); window.UpdateLayout(); SaveRender("configuracoes-sobre-3.0.0");
             File.WriteAllLines(Path.Combine(Output, "produto-verificacao.txt"), lines, Encoding.UTF8); SetPanel(0);
         }
         static string ProductText(DependencyObject node)

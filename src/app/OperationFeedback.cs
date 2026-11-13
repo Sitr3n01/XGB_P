@@ -1,6 +1,6 @@
 // Feedback por contexto e operacao: respostas antigas nao sobrescrevem uma escolha nova.
 // Estados finais expiram mesmo com a barra oculta; pendencias so terminam por resultado/limite da operacao.
-// Tudo vai para o historico (ActionHistory.cs); no Inicio, o rodape mostra so o critico (ADR 0078).
+// Tudo vai para o historico (ActionHistory.cs); Inicio e AMD filtram as confirmacoes rotineiras no rodape.
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -18,7 +18,8 @@ namespace XGBP.Design
         public FeedbackKind Kind;
         public DateTime Started, Expires, Deadline;
         public ActionHistoryEntry History;
-        public bool Pinned; // espera longa que aparece no Inicio enquanto pendente
+        public bool Pinned; // espera longa no Inicio; operacao relevante no AMD (cache)
+        public FeedbackNotice PreviousVisible; // AMD: um ajuste silencioso nao apaga um aviso ainda valido
     }
     sealed partial class Preview
     {
@@ -44,6 +45,13 @@ namespace XGBP.Design
         FeedbackNotice NewFeedback(string text, FeedbackKind kind, string scope)
         {
             var notice = new FeedbackNotice { Scope = scope, Text = text, Kind = kind, Started = feedbackNow(), Expires = DateTime.MaxValue };
+            FeedbackNotice previous;
+            if (scope == AmdTuningScope && feedbackNotices.TryGetValue(scope, out previous))
+            {
+                previous = VisibleAmdFeedback(previous);
+                // Pendencias ficam no slot atual: so ele recebe callbacks e verificacao de prazo.
+                if (previous != null && previous.Kind != FeedbackKind.Pending) notice.PreviousVisible = previous;
+            }
             notice.History = RecordHistory(scope, text, kind);
             feedbackNotices[scope] = notice; FinishFeedback(notice, text, kind); return notice;
         }
@@ -79,9 +87,15 @@ namespace XGBP.Design
                     waiting.Text = "A operação continua sem confirmação. Confira o resultado antes de tentar novamente."; waiting.Kind = FeedbackKind.Warning; waiting.Expires = feedbackNow().AddSeconds(12);
                     WriteLog(waiting.Text); UpdateHistory(waiting.History, waiting.Text, waiting.Kind);
                 }
-            foreach (var key in new List<string>(feedbackNotices.Keys)) if (feedbackNotices[key].Expires <= feedbackNow()) feedbackNotices.Remove(key);
+            foreach (var key in new List<string>(feedbackNotices.Keys))
+            {
+                var current = feedbackNotices[key];
+                if (current.Expires <= feedbackNow() && (current.PreviousVisible == null || current.PreviousVisible.Expires <= feedbackNow()))
+                    feedbackNotices.Remove(key);
+            }
             FeedbackNotice notice; feedbackNotices.TryGetValue(FeedbackScope, out notice);
             if (notice != null && FeedbackScope == "0" && !HomeShows(notice)) notice = null;
+            if (FeedbackScope == AmdTuningScope) notice = VisibleAmdFeedback(notice);
             var text = (TextBlock)window.FindName("Feedback");
             var icon = (TextBlock)window.FindName("FeedbackIcon");
             string value = notice == null ? "" : notice.Text;
@@ -97,6 +111,14 @@ namespace XGBP.Design
         static bool HomeShows(FeedbackNotice notice)
         {
             return notice.Kind == FeedbackKind.Error || notice.Kind == FeedbackKind.Attention || notice.Pinned && notice.Kind == FeedbackKind.Pending;
+        }
+        FeedbackNotice VisibleAmdFeedback(FeedbackNotice notice)
+        {
+            if (notice == null) return null;
+            if (notice.Expires > feedbackNow() && (HistoryProblem(notice.Kind) || notice.Pinned))
+            { notice.PreviousVisible = null; return notice; }
+            var previous = notice.PreviousVisible;
+            return previous != null && previous.Expires > feedbackNow() ? previous : null;
         }
         static string FeedbackGlyph(FeedbackKind kind)
         {

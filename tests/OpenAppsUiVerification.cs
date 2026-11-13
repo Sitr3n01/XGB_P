@@ -158,8 +158,8 @@ namespace XGBP.Design
                 string tag = (string)((Control)Keyboard.FocusedElement).Tag;
                 openApps.RemoveAt(0); RebuildOpenApps(); window.UpdateLayout();
                 if ((string)((Control)Keyboard.FocusedElement).Tag != tag) throw new Exception("Falha: preservar foco durante tracking de janelas.");
-                openApps.Clear(); RebuildOpenApps(); FocusHome("steam-home"); Navigate("BAIXO"); Navigate("BAIXO");
-                // A lista comeca pelo primeiro outro jogo, sem repetir o destaque (ADR 0060).
+                openApps.Clear(); RebuildOpenApps(); FocusHome("utility-power"); Navigate("BAIXO");
+                // Sem apps, os quadrados do Acesso rapido descem ao primeiro outro jogo, sem repetir o destaque (ADR 0060).
                 if ((string)((Control)Keyboard.FocusedElement).Tag != "recent-fixture:one") throw new Exception("Falha: navegar sem aplicativos para o primeiro recente sem destaque.");
             }
             finally

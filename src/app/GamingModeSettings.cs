@@ -86,7 +86,7 @@ namespace XGBP.Design
                 var button = actions.Find(c => (string)c.Tag == "exit-xbox-mode");
                 check(button != null && button.IsEnabled, "botao habilitado em Configuracoes");
                 button.Focus(); SaveRender("configuracoes-sair-modo-xbox");
-                check(BodyHas("PS ou Win + G") && !BodyHas("Win + Shift + G") && !BodyHas("Gesto · microfone por 600 ms"), "abertura corresponde a regra atual");
+                check(BodyStarts("PS ou Win\u00a0+\u00a0G abre a barra") && !BodyHas("Win + Shift + G") && !BodyHas("Gesto · microfone por 600 ms"), "abertura corresponde a regra atual");
                 RequestExitGamingMode(); check(calls == 1 && gamingModeExitPending && !button.IsEnabled && window.IsVisible, "despacho nao inventa sucesso e bloqueia repeticao");
                 RequestExitGamingMode(); check(calls == 1, "clique repetido nao despacha novamente");
                 active = false; now = now.AddMilliseconds(200); CheckExitGamingMode();

@@ -26,6 +26,10 @@ namespace XGBP.Network
         public string Name = "";
         public int Percent;
         public bool Connected;
+        // Campos do G HUB (ADR 0106). O Hands-Free do Bluetooth nao informa carga nem tempo restante.
+        public bool Charging, FromGHub;
+        public int HoursLeft = -1;
+        public string Link = "Bluetooth";
     }
 
     public static class BluetoothBattery
@@ -51,8 +55,8 @@ namespace XGBP.Network
                     {
                         int level = ByteProperty(set, ref info, BatteryKey, 2);
                         if (level < 0 || level > 100) continue;
-                        var node = new BluetoothBatteryNode { Percent = level, Container = GuidProperty(set, ref info, ContainerKey, 2),
-                            InstanceId = InstanceId(set, ref info) };
+                    var node = new BluetoothBatteryNode { Percent = level, Container = GuidProperty(set, ref info, ContainerKey, 2), InstanceId =
+                        InstanceId(set, ref info) };
                         if (node.Container == Guid.Empty) continue;
                         node.Audio = IsAudioService(node.InstanceId);
                         result.Add(node);
@@ -88,10 +92,9 @@ namespace XGBP.Network
             if (levels.Count == 0) return result;
             var byContainer = new Dictionary<Guid, HeadsetBattery>();
             string[] props = { "System.Devices.Aep.IsConnected", "System.Devices.Aep.ContainerId" };
-            foreach (var selector in new[] { BluetoothDevice.GetDeviceSelectorFromPairingState(true),
-                BluetoothLEDevice.GetDeviceSelectorFromPairingState(true) })
-                foreach (var info in Radios.Wait(DeviceInformation.FindAllAsync(selector, props, DeviceInformationKind.AssociationEndpoint),
-                    "listar os fones Bluetooth"))
+foreach (var selector in new[] { BluetoothDevice.GetDeviceSelectorFromPairingState(true), BluetoothLEDevice.GetDeviceSelectorFromPairingState(true) })
+            foreach (var info in Radios.Wait(DeviceInformation.FindAllAsync(selector, props, DeviceInformationKind.AssociationEndpoint),
+                "listar os fones Bluetooth"))
                 {
                     object value; Guid container = Guid.Empty;
                     if (info.Properties.TryGetValue("System.Devices.Aep.ContainerId", out value) && value is Guid) container = (Guid)value;
@@ -100,8 +103,9 @@ namespace XGBP.Network
                     HeadsetBattery headset;
                     if (!byContainer.TryGetValue(container, out headset))
                     {
-                        headset = new HeadsetBattery { Container = container, Percent = level.Percent, Name = string.IsNullOrWhiteSpace(info.Name) ?
-                            "Fone Bluetooth" : info.Name };
+                        headset = new HeadsetBattery { Container = container, Percent = level.Percent, Name =
+                            string.IsNullOrWhiteSpace(info.Name) ? "Fone Bluetooth" : info.Name
+                            };
                         byContainer[container] = headset; result.Add(headset);
                     }
                     if (info.Properties.TryGetValue("System.Devices.Aep.IsConnected", out value) && value is bool && (bool)value) headset.Connected = true;
@@ -127,8 +131,7 @@ namespace XGBP.Network
         static Guid GuidProperty(IntPtr set, ref DeviceInfo info, Guid format, uint id)
         {
             var key = new PropertyKey { Format = format, Id = id }; uint type, required; var buffer = new byte[16];
-            if (!SetupDiGetDeviceProperty(set, ref info, ref key, out type, buffer, 16, out required, 0) || type != TypeGuid ||
-                required != 16) return Guid.Empty;
+        if (!SetupDiGetDeviceProperty(set, ref info, ref key, out type, buffer, 16, out required, 0) || type != TypeGuid || required != 16) return Guid.Empty;
             return new Guid(buffer);
         }
         static string InstanceId(IntPtr set, ref DeviceInfo info)
@@ -143,8 +146,8 @@ namespace XGBP.Network
         static extern IntPtr SetupDiGetClassDevs(IntPtr classGuid, string enumerator, IntPtr parent, uint flags);
         [DllImport("setupapi.dll", SetLastError = true)] static extern bool SetupDiEnumDeviceInfo(IntPtr set, uint index, ref DeviceInfo info);
         [DllImport("setupapi.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "SetupDiGetDevicePropertyW")]
-        static extern bool SetupDiGetDeviceProperty(IntPtr set, ref DeviceInfo info, ref PropertyKey key, out uint type, byte[] buffer, uint size,
-            out uint required, uint flags);
+        static extern bool SetupDiGetDeviceProperty(IntPtr set, ref DeviceInfo info, ref PropertyKey key, out uint type, byte[] buffer, uint size, out uint
+            required, uint flags);
         [DllImport("setupapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         static extern bool SetupDiGetDeviceInstanceId(IntPtr set, ref DeviceInfo info, StringBuilder id, int size, out int required);
         [DllImport("setupapi.dll")] static extern bool SetupDiDestroyDeviceInfoList(IntPtr set);

@@ -1,4 +1,5 @@
-// Verificacao do status nas telas Steam (ADR 0093): janela da frente substituida, renders com dados de teste.
+// Sobre as telas do Big Picture, que ja mostram a hora no canto, a barra esconde o proprio relogio e leva rede e
+// bateria para o lado do titulo do painel (ADR 0093). Visual aprovado pelo usuario em 04/11; ligado na 2.0.3 republicada.
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,8 +24,9 @@ namespace XGBP.Design
                 batteries.Clear(); batteryDevice = null;
                 SetBattery("fisico-bt", StatusSample(5, 55, 0, "descarregando", XGBP.Input.BatterySource.PhysicalBluetooth)); UpdateStatus();
                 SetHeadsets(new List<XGBP.Network.HeadsetBattery> { new XGBP.Network.HeadsetBattery { Name = "G435", Percent = 80, Connected = true } });
-                steamUiWindow = delegate { return true; }; previousWindow = new WindowObservation { Window = new DesktopWindow { Handle = new IntPtr(5),
-                    ProcessId = 5 } };
+                steamUiWindow = delegate { return true; }; previousWindow = new WindowObservation { Window = new DesktopWindow { Handle = new
+                    IntPtr(5), ProcessId = 5 }
+                    };
                 UpdateStatusPlacement();
                 check(steamStatusActive && MotionPart("StatusArea").Visibility == Visibility.Collapsed,
                     "Big Picture na frente ao abrir: sem a hora da barra, rede e bateria ao lado do titulo");
@@ -33,8 +35,8 @@ namespace XGBP.Design
                 steamUiWindow = delegate { return true; }; UpdateStatusPlacement(); previousWindow = null; UpdateStatusPlacement();
                 check(!steamStatusActive && MotionPart("StatusArea").Visibility == Visibility.Visible, "sem janela na frente volta a faixa padrao");
                 steamUiWindow = delegate { throw new InvalidOperationException("fixture: leitura incerta"); };
-                previousWindow = new WindowObservation { Window = new DesktopWindow { Handle = new IntPtr(5), ProcessId = 5 } };
-                UpdateStatusPlacement(); check(!steamStatusActive, "leitura incerta da janela mantem a faixa padrao");
+                previousWindow = new WindowObservation { Window = new DesktopWindow { Handle = new IntPtr(5), ProcessId = 5 } }; UpdateStatusPlacement();
+                check(!steamStatusActive, "leitura incerta da janela mantem a faixa padrao");
                 var cases = new[] { new[] { 1920, 1080 }, new[] { 3840, 2160 } };
                 foreach (var c in cases)
                 {
@@ -53,7 +55,8 @@ namespace XGBP.Design
                     SetPanel(6); window.UpdateLayout(); PlaceSteamStatus();
                     box = SceneBox(icons); titleBox = SceneBox(MotionPart("PanelTitle"));
                     check(Math.Abs((box.Top + box.Bottom) / 2 - (titleBox.Top + titleBox.Bottom) / 2) <= 1,
-                        "outro painel com altura diferente mantem o alinhamento em " + label);
+                        "outro painel com altura diferente mantem o alinhamento em " +
+                        label);
                     SaveSceneRender("status-steam-som-" + label, c[0], c[1]);
                     SetPanel(0); ApplyStatusPlacement(false); window.UpdateLayout();
                     check(MotionPart("StatusArea").Visibility == Visibility.Visible && icons.Parent == MotionPart("StatusArea"),

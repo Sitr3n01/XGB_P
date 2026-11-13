@@ -49,6 +49,7 @@ namespace XGBP.Design
             batterySlot = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Bottom };
             icons.Children.Add(networkIcon); icons.Children.Add(batterySlot);
             StartHeadsets(icons); // fone Bluetooth depois do controle (ADR 0094)
+            StartMicrophoneStatus(icons); // microfone mudo antes da rede (ADR 0107)
             // O pe dos icones fica na linha de base dos digitos: sobe da base da linha o espaco abaixo da linha de base.
             var margin = icons.Margin; margin.Bottom = ClockDescent(); icons.Margin = margin;
             // A faixa sobe o espaco interno da fonte: o topo dos digitos fica na margem segura, alinhado ao topo da barra.
@@ -81,7 +82,7 @@ namespace XGBP.Design
         {
             ((TextBlock)window.FindName("Clock")).Text = DateTime.Now.ToString("HH:mm");
             SelectBattery();
-            UpdateStatusIcons(); NetworkTick(); HeadsetTick();
+            UpdateStatusIcons(); NetworkTick(); HeadsetTick(); MicStatusTick();
         }
 
         void NetworkTick()
@@ -115,7 +116,8 @@ namespace XGBP.Design
             if (!batteries.Remove(device)) return;
             UpdateStatus();
         }
-        static int BatteryRank(Battery b) { return b.ChargeState < 0 ? 0 : b.Source == BatterySource.PhysicalUsb ? 2 : b.Source == BatterySource.PhysicalBluetooth ? 1 : 0; }
+        static int BatteryRank(Battery b) { return b.ChargeState < 0 ? 0 : b.Source == BatterySource.PhysicalUsb ? 2 : b.Source == BatterySource.PhysicalBluetooth
+            ? 1 : 0; }
         void SelectBattery()
         {
             DateTime now = batteryNow();
@@ -162,7 +164,8 @@ namespace XGBP.Design
             if (s.Kind == "ethernet")
             {
                 // Conector de rede com cantos suaves, contatos curtos e cabo central discreto.
-                c.Children.Add(IconStroke("M 6,2.8 H 20 Q 21.5,2.8 21.5,4.3 V 11.5 Q 21.5,13 20,13 H 17 V 16 H 9 V 13 H 6 Q 4.5,13 4.5,11.5 V 4.3 Q 4.5,2.8 6,2.8 Z", "TextPrimary", 1.6));
+                c.Children.Add(IconStroke("M 6,2.8 H 20 Q 21.5,2.8 21.5,4.3 V 11.5 Q 21.5,13 20,13 H 17 V 16 H 9 V 13 H 6 Q 4.5,13 4.5,11.5 V 4" +".3 Q 4.5,2.8 6,2.8 Z",
+                    "TextPrimary", 1.6));
                 c.Children.Add(IconStroke("M 8.5,3.2 V 6.5 M 11.5,3.2 V 6.5 M 14.5,3.2 V 6.5 M 17.5,3.2 V 6.5", "TextPrimary", 1.2));
                 c.Children.Add(IconStroke("M 13,16.5 V 19", "TextPrimary", 1.6));
                 name = "Ethernet";
@@ -175,7 +178,7 @@ namespace XGBP.Design
                 for (int i = 0; i < radii.Length; i++) c.Children.Add(IconStroke(Arc(13, 17.5, radii[i]), i < networkLit ? "TextPrimary" : "MeterTrack", 2));
                 c.Children.Add(IconFill(Dot(13, 17.5, 1.9), s.Kind == "none" ? "MeterTrack" : "TextPrimary"));
                 if (s.Kind == "none") { c.Children.Add(IconStroke("M 4,2.5 L 22,19", "TextPrimary", 2)); networkSlash = true; }
-                name = s.Kind == "none" ? "Sem conexão de rede" : (s.Kind == "celular" ? "Rede celular" : "Wi-Fi") + (s.Bars >= 0 ? " · sinal " + s.Bars + " de 5" : "");
+        name = s.Kind == "none" ? "Sem conexão de rede" : (s.Kind == "celular" ? "Rede celular" : "Wi-Fi") + (s.Bars >= 0 ? " · sinal " + s.Bars + " de 5" : "");
             }
             if (s.Kind != "none" && !s.Internet)
             {
@@ -190,7 +193,7 @@ namespace XGBP.Design
             c.ToolTip = name; AutomationProperties.SetName(c, name);
         }
 
-        // So a bateria, sem o icone do controle: sem leitura de bateria, o espaco fica vazio.
+        // Controle e bateria juntos, como no fone: sem leitura de bateria, o espaco fica vazio.
         void DrawBattery(bool has, Battery b)
         {
             var slot = batterySlot; slot.Children.Clear(); batteryFill = null; batteryBolt = null; batteryMark = null;
@@ -199,13 +202,22 @@ namespace XGBP.Design
         }
 
         FrameworkElement BatteryIcon(Battery b)
-        { return BatteryGlyph(b.Percent, b.ChargeState == 1, out batteryFill, out batteryBolt, out batteryMark); }
+        {
+            var pair = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Bottom,
+                Margin = new Thickness(14, 0, 0, 0) };
+            pair.Children.Add(DualSenseGlyph.Create(Brush("TextPrimary")));
+            var battery = BatteryGlyph(b.Percent, b.ChargeState == 1, out batteryFill, out batteryBolt, out batteryMark);
+            battery.Margin = new Thickness(5, 0, 0, 0);
+            pair.Children.Add(battery);
+            return pair;
+        }
         // Desenho comum da bateria (DualSense e fones Bluetooth); percent < 0 e erro de leitura.
         FrameworkElement BatteryGlyph(int percent, bool charging, out Shapes.Rectangle fill, out Shapes.Path bolt, out TextBlock mark)
         {
             bool error = percent < 0; fill = null; bolt = null; mark = null;
             string outline = error ? "Critical" : "TextPrimary";
-            var shell = new Border { Width = 23, Height = 13, BorderThickness = new Thickness(1.6), BorderBrush = Brush(outline), CornerRadius = new CornerRadius(2.5),
+            var shell = new Border { Width = 23, Height = 13, BorderThickness = new Thickness(1.6), BorderBrush = Brush(outline), CornerRadius = new
+                CornerRadius(2.5),
                 Padding = new Thickness(1.6) };
             if (error)
             {
@@ -222,7 +234,8 @@ namespace XGBP.Design
                         "TextPrimary") };
                 shell.Child = fill;
             }
-            var nub = new Border { Width = 2.4, Height = 5.5, Background = Brush(outline), CornerRadius = new CornerRadius(0, 1.2, 1.2, 0), VerticalAlignment = VerticalAlignment.Center };
+            var nub = new Border { Width = 2.4, Height = 5.5, Background = Brush(outline), CornerRadius = new CornerRadius(0, 1.2, 1.2, 0), VerticalAlignment =
+                VerticalAlignment.Center };
             var body = new StackPanel { Orientation = Orientation.Horizontal }; body.Children.Add(shell); body.Children.Add(nub);
             var icon = new Grid { Margin = new Thickness(14, 0, 0, 0), VerticalAlignment = VerticalAlignment.Bottom };
             icon.Children.Add(body);
@@ -232,7 +245,7 @@ namespace XGBP.Design
                 var badge = new Border { Width = 11, Height = 11, Background = Brush("SurfaceRail"), CornerRadius = new CornerRadius(5.5),
                     HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, -3, -2) };
                 bolt = new Shapes.Path { Data = Geometry.Parse("M 5.8,0 L 0.8,5.4 H 3.5 L 2.5,10 L 7.5,4.3 H 4.8 Z"), Fill = Brush("AccentText"),
-                    Width = 7, Height = 9, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+            Width = 7, Height = 9, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
                 badge.Child = bolt; icon.Children.Add(badge);
             }
             return icon;
@@ -252,7 +265,8 @@ namespace XGBP.Design
         }
         static string Dot(double cx, double cy, double r)
         {
-            return string.Format(CultureInfo.InvariantCulture, "M {0:0.##},{1:0.##} A {2:0.##},{2:0.##} 0 1 1 {3:0.##},{1:0.##} A {2:0.##},{2:0.##} 0 1 1 {0:0.##},{1:0.##} Z",
+            return string.Format(CultureInfo.InvariantCulture,
+                "M {0:0.##},{1:0.##} A {2:0.##},{2:0.##} 0 1 1 {3:0.##},{1:0.##} A {2:0.##},{2:0.##} 0 1 1 {0:0.##},{" +"1:0.##} Z",
                 cx - r, cy, r, cx + r);
         }
 
@@ -273,7 +287,7 @@ namespace XGBP.Design
                 if (clockText.FontSize < 44 || clockText.FontFamily.Source != "Segoe UI" || clockText.Text != DateTime.Now.ToString("HH:mm"))
                     throw new Exception("Falha: hora grande na fonte do projeto.");
                 // A faixa fica no canto superior direito, ao lado da barra de altura total, sem cruzar o painel.
-                if (SceneBox(MotionPart("StatusArea")).Left < SceneBox(MotionPart("Sidebar")).Right + 24) throw new Exception("Falha: faixa de status invade o painel.");
+            if (SceneBox(MotionPart("StatusArea")).Left < SceneBox(MotionPart("Sidebar")).Right + 24) throw new Exception("Falha: faixa de status invade o painel.");
                 // Icones a esquerda da hora, com o pe na linha de base dos digitos.
                 var scene = (UIElement)window.FindName("Scene"); var icons = (FrameworkElement)window.FindName("StatusIcons");
                 double iconsBottom = icons.TranslatePoint(new Point(0, icons.ActualHeight), scene).Y;
@@ -282,14 +296,15 @@ namespace XGBP.Design
                     Math.Abs(iconsBottom - baseline) > 1) throw new Exception("Falha: icones na linha de base da hora.");
                 SetBattery("DualSense#0-USB", StatusSample(0x05, 55, 0, "descarregando")); window.UpdateLayout();
                 foreach (FrameworkElement part in new[] { (FrameworkElement)networkIcon, (FrameworkElement)batterySlot.Children[0] })
-                    if (Math.Abs(part.TranslatePoint(new Point(0, part.ActualHeight), scene).Y - baseline) > 1) throw new Exception("Falha: pe de cada icone na linha de base.");
+                    if (Math.Abs(part.TranslatePoint(new Point(0, part.ActualHeight), scene).Y - baseline) > 1) throw new Exception(
+                        "Falha: pe de cada icone na linha de base.");
 
                 // Controle: aguardando, carga normal, baixa, carregando, erro e perda do dispositivo.
                 batteries.Clear(); batteryDevice = null; batteryText = WaitingText; statusDrawn = null; UpdateStatusIcons();
                 if (batterySlot.Children.Count != 0 || batterySlot.ToolTip != null) throw new Exception("Falha: sem bateria enquanto aguarda o controle.");
                 SetBattery("DualSense#0-USB", StatusSample(0x08, 85, 0, "descarregando"));
                 if (batteryFill == null || Math.Abs(batteryFill.Width - 16.6 * .85) > .01 || batteryFill.Fill != Brush("TextPrimary") || batteryBolt != null ||
-                    batterySlot.Children.Count != 1 || (string)batterySlot.ToolTip != "HID · 85% · descarregando") throw new Exception("Falha: bateria do controle.");
+            batterySlot.Children.Count != 1 || (string)batterySlot.ToolTip != "HID · 85% · descarregando") throw new Exception("Falha: bateria do controle.");
                 window.UpdateLayout(); SaveRender("faixa-status");
                 SetBattery("DualSense#0-USB", StatusSample(0x01, 15, 0, "descarregando"));
                 if (batteryFill == null || batteryFill.Fill != Brush("Critical")) throw new Exception("Falha: bateria baixa.");
@@ -305,14 +320,15 @@ namespace XGBP.Design
                 if (batteryDevice != null || batterySlot.Children.Count != 0 || batteryText != WaitingText) throw new Exception("Falha: perda do controle.");
 
                 // Rede: Ethernet, Wi-Fi pelas barras, sem internet, sem conexao e erro de leitura.
-                Func<NetworkState, bool> show = delegate(NetworkState s) { networkState = s; UpdateStatusIcons(); return networkIcon.Visibility == Visibility.Visible; };
-                if (!show(new NetworkState { Kind = "ethernet", Internet = true }) || networkLit != 0 || networkBadge || (string)networkIcon.ToolTip != "Ethernet · internet")
+Func<NetworkState, bool> show = delegate(NetworkState s) { networkState = s; UpdateStatusIcons(); return networkIcon.Visibility == Visibility.Visible; };
+                if (!show(new NetworkState { Kind = "ethernet", Internet = true }) || networkLit != 0 || networkBadge || (string)networkIcon.ToolTip !=
+                    "Ethernet · internet")
                     throw new Exception("Falha: rede Ethernet.");
                 if (!show(new NetworkState { Kind = "wifi", Internet = true, Bars = 3 }) || networkLit != 2 || networkBadge || networkSlash ||
                     (string)networkIcon.ToolTip != "Wi-Fi · sinal 3 de 5 · internet") throw new Exception("Falha: Wi-Fi com 3 barras.");
                 SetBattery("DualSense#0-USB", StatusSample(0x16, 65, 1, "carregando"));
                 window.UpdateLayout(); SaveRender("faixa-status-wifi");
-                if (!show(new NetworkState { Kind = "wifi", Internet = true, Bars = 5 }) || networkLit != 3) throw new Exception("Falha: Wi-Fi com sinal cheio.");
+            if (!show(new NetworkState { Kind = "wifi", Internet = true, Bars = 5 }) || networkLit != 3) throw new Exception("Falha: Wi-Fi com sinal cheio.");
                 if (!show(new NetworkState { Kind = "ethernet", Internet = false }) || !networkBadge || !((string)networkIcon.ToolTip).EndsWith("sem internet"))
                     throw new Exception("Falha: rede sem internet.");
                 if (!show(new NetworkState()) || !networkSlash || networkBadge || networkLit != 0) throw new Exception("Falha: sem conexao.");
@@ -320,7 +336,7 @@ namespace XGBP.Design
             }
             finally
             {
-                networkRead = read; networkState = saved; batteries.Clear(); batteryDevice = null; batteryText = WaitingText; statusDrawn = null; UpdateStatus();
+        networkRead = read; networkState = saved; batteries.Clear(); batteryDevice = null; batteryText = WaitingText; statusDrawn = null; UpdateStatus();
             }
         }
 #endif
@@ -345,11 +361,38 @@ namespace XGBP.Design
             window.Show(); SetPanel(0); statusDrawn = null; UpdateStatusIcons(); ((TextBlock)window.FindName("Clock")).Text = DateTime.Now.ToString("HH:mm");
             window.UpdateLayout(); SaveRender("status-real"); window.Hide();
             string headsetLine;
-            try { var found = BluetoothBattery.Headsets(); headsetLine = found.Count + " com bateria; " + found.FindAll(h => h.Connected).Count +
-                " conectado(s)"; }
+        try { var found = BluetoothBattery.Headsets(); headsetLine = found.Count + " com bateria; " + found.FindAll(h => h.Connected).Count + " conectado(s)"; }
             catch (Exception ex) { headsetLine = "leitura falhou | " + ex.Message; }
+            string ghubLine;
+            try
+            {
+                var g = GHubBattery.Read();
+                ghubLine = (g.Devices >= 0 ? g.Devices + " dispositivo(s); " : "") + g.Headsets.Count + " fone(s) com bateria" +
+        string.Concat(g.Headsets.ConvertAll(h => " | " + h.Name + " · " + HeadsetDetail(h)).ToArray()) + (g.Note != null ? " | nota: " + g.Note : "");
+            }
+            catch (Exception ex) { ghubLine = "leitura falhou | " + ex.Message; }
+            // Microfone (ADR 0107): leitura do padrao e registro/cancelamento dos avisos, sem SetMute nem SetVolume.
+            string micLine;
+            try
+            {
+                var mic = XGBP.Audio.CoreAudio.ReadMicrophone();
+                micLine = mic == null ? "nenhum microfone ativo" : mic.Name + " | " + (mic.Muted ? "mudo" : "ativo") + " | " + mic.Volume + "%";
+                string micId = mic == null ? null : mic.Id;
+                // Como no fluxo normal, o COM dos avisos roda numa thread do pool (MTA), fora da thread da interface.
+                micLine += Task.Factory.StartNew<string>(delegate {
+                    using (var watch = new XGBP.Audio.MicrophoneWatch())
+                    {
+                        watch.Start();
+                        return " | avisos " + (watch.Active ? "registrados" : "nao registrados") + (watch.BoundId == null ? ", sem aviso de mudo" :
+                            watch.BoundId == micId ? ", aviso de mudo no mesmo microfone" : ", aviso de mudo em outro microfone");
+                    }
+                }).Result + " | avisos cancelados";
+            }
+            catch (Exception ex) { micLine = "leitura falhou | " + ex.GetBaseException().Message; }
             File.WriteAllText(System.IO.Path.Combine(Output, "status-real.txt"), "rede: " + networkState.Describe() + Environment.NewLine +
                 "fones bluetooth (so leitura das propriedades do Windows): " + headsetLine + Environment.NewLine +
+                "fones G HUB (so GET no agente local ws://127.0.0.1:9010): " + ghubLine + Environment.NewLine +
+                "microfone padrao (so leitura e avisos do Windows): " + micLine + Environment.NewLine +
                 "controle: " + (has ? batteryDevice + " | " + batteryText : batteryText) + Environment.NewLine +
                 "fontes observadas: " + snapshot.Count + " (apenas origens fisicas recentes podem representar a bateria)" + Environment.NewLine, Encoding.UTF8);
             WriteLog("faixa de status: leitura real concluida (rede e bateria, so leitura)");

@@ -65,8 +65,8 @@ namespace XGBP.Design
                 WireMotion(button);
                 button.GotKeyboardFocus += delegate {
                     if (systemPowerBusy) return;
-                    // Lojas fica sob o Inicio: focar o Inicio no trilho nao troca o painel.
-                    if (index != 1 && panel != index && !(index == 0 && panel == StoresPanel)) { returnToHome = false; SetPanel(index); }
+                    // Lojas e Programas ficam sob o Inicio: focar o Inicio no trilho nao troca o painel.
+                    if (index != 1 && RailIndex(panel) != index) { returnToHome = false; SetPanel(index); }
                     else ShowHomeHint(null);
                 };
                 button.Click += delegate { InvokeSoundAction(button, delegate { SelectRail(index); }); };
@@ -123,6 +123,7 @@ namespace XGBP.Design
             StartAppearancePreferences();
             StartAccentTheme();
             StartMotion();
+            StartSlidingTitle();
             StartDescriptions();
             StartFeedback();
             StartWindowFocus();
@@ -131,7 +132,8 @@ namespace XGBP.Design
             StartScene();
             handle = new WindowInteropHelper(window).EnsureHandle();
             MarkOverlayWindow();
-            StartLaunchSettings(); StartTaskbar(); StartAppVolume(); StartSteamStatus(); // antes da ponte Win+G e do modo (ADRs 0091-0093)
+            StartLaunchSettings(); // Preferencias precisam estar carregadas antes de decidir a ponte Win+G.
+            StartTaskbar(); StartAppVolume(); StartSteamStatus(); // antes da primeira leitura do modo e da abertura (ADRs 0091-0093)
             StartActivation();
             if (!verify)
             {
@@ -170,7 +172,7 @@ namespace XGBP.Design
             repeat.Interval = TimeSpan.FromMilliseconds(40);
             repeat.Tick += delegate { TickController(); };
             repeat.Start();
-            StartStatus(); StartAudio(); StartOpenApps(); StartMedia(); StartPerf(); StartGames(); StartConnections(); StartStores(); StartSounds(); StartKeyboard(); StartSystemPower(); StartAmd(); StartAmdTuning(); SetPanel(0); UpdateStatus();
+            StartStatus(); StartAudio(); StartOpenApps(); StartMedia(); StartPerf(); StartGames(); StartConnections(); StartStores(); StartPrograms(); StartSounds(); StartKeyboard(); StartSystemPower(); StartAmd(); StartAmdTuning(); StartWake(); StartTv(); SetPanel(0); UpdateStatus();
             StartPresentationScheduling();
             WriteLog(verify ? "verificacao iniciada" : "iniciado; PS so no FSE; Win+G desktop=" + launchPreferences.DesktopWinG + "; na bandeja; " + (startHidden ? "inicializacao do Windows" : "abertura manual") + "; administrador=" + LaunchSettings.Elevated +
                 "; uiAccess=" + LaunchSettings.UiAccess + "; logs=" + Output);
@@ -202,7 +204,7 @@ namespace XGBP.Design
             MaybeHoldSteamInput();
             EnableExitGamingModeButtons();
             if (panel == 0 && actions.Count > 0) actions[0].Focus();
-            else rail[RailIndex(panel)].Focus();
+            else FocusNavigation(RailIndex(panel));
             window.UpdateLayout(); MotionOpen(fresh);
             RenderFeedback();
             RefreshOpenApps(true); mediaNextRead = DateTime.MinValue; perfNextRead = DateTime.MinValue; networkNextRead = DateTime.MinValue; amdNextRead = DateTime.MinValue;
@@ -214,7 +216,8 @@ namespace XGBP.Design
         }
         void Hide(bool restorePrevious = false)
         {
-            mediaEditing = null; if (window.IsVisible) RestoreAppVolumeOnClose("barra fechada"); // o som volta antes de adiar pela Steam
+            mediaEditing = null;
+            if (window.IsVisible) RestoreAppVolumeOnClose("barra fechada"); // antes de adiar pela Steam: o som volta ja
             CancelAppSwitch("Troca de janela cancelada pelo fechamento da barra.");
             if (DeferHideForSteamInput(restorePrevious)) return;
             if (window.IsVisible) ReleasePreviousWindow(restorePrevious);
@@ -241,7 +244,7 @@ namespace XGBP.Design
         // Entrada no painel: o Som comeca pela saida de som, mesmo com o player acima dela.
         void FocusFirstAction()
         {
-            Control target = panel == 6 ? actions.Find(c => (string)c.Tag == "output" && c.IsEnabled) : null;
+            Control target = panel == 6 ? actions.Find(c => (string)c.Tag == "output" && c.IsEnabled) : panel == ProgramsPanel ? ProgramsEntryFocus() : null;
             if (target == null) target = actions.Find(c => c.IsEnabled);
             if (target != null) target.Focus();
         }
@@ -296,7 +299,7 @@ namespace XGBP.Design
         {
             mediaEditing = null;
             CancelAppSwitch("Troca de janela cancelada pela navegação.");
-            powerConfirmation = null;
+            powerConfirmation = null; tvConfirm = null;
             if (index == 0) StopDescription();
             int before = panel; motionBuilding = true;
             CancelElementMotion(MotionPart("PanelContent"));
@@ -309,7 +312,7 @@ namespace XGBP.Design
             ((TextBlock)window.FindName("Feedback")).TextTrimming = TextTrimming.None;
             ((ScrollViewer)window.FindName("BodyScroll")).VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
             ((ScrollViewer)window.FindName("BodyScroll")).ScrollToTop();
-            string[] titles = { "Início", "", "", "Desempenho", "Controle e energia", "Configurações", "Som", "Lojas", "Gravação", "AMD" };
+            string[] titles = { "Início", "", "", "Desempenho", "Controle e energia", "Configurações", "Som", "Lojas", "Gravação", "AMD", "Programas" };
             ((TextBlock)window.FindName("PanelTitle")).Text = titles[index];
             for (int i = 0; i < rail.Count; i++) rail[i].Background = i == RailIndex(index) ? Brush("SurfaceSelected") : Brushes.Transparent;
             ClearFeedback(true);
@@ -319,7 +322,8 @@ namespace XGBP.Design
             else if (index == 4) BuildPowerPanel();
             else if (index == 6) BuildAudioPanel(true);
             else if (index == StoresPanel) BuildStores();
-            else if (index == AmdTuningPanel) { BuildAmdTuningPanel(); if (!verify) QueueUi(delegate { ReadAmdTuning(); }, DispatcherPriority.Background); }
+            else if (index == ProgramsPanel) { if (before != index) ResetProgramSearch(); BuildPrograms(); }
+            else if (index == AmdTuningPanel) { EnterAmdTuning(); if (!verify) QueueUi(delegate { ReadAmdTuning(); }, DispatcherPriority.Background); }
             else if (index == AmdPanel)
             {
                 BuildAmdPanel();
@@ -334,8 +338,9 @@ namespace XGBP.Design
             }
             WriteLog("painel: " + titles[index]);
             MotionHeight(height); MotionPanel(before, index); motionBuilding = false; MotionResumeMedia();
-            if (index == StoresPanel) ReadStores();
+            if (index == StoresPanel) ReadStores(); else if (index == ProgramsPanel) ReadPrograms();
             RenderFeedback();
+            UpdateSlidingTitle();
             RefreshPresentationTimers();
         }
 
@@ -344,18 +349,19 @@ namespace XGBP.Design
         {
             if (BackMedia()) return;
             RestartDescriptionForInput();
-            if (SystemPowerBack() || GamesBack() || AppCloseBack() || ConnectionsBack() || AudioBack() || PerfBack()) { Sound("voltar"); return; }
+            if (TvBack() || SystemPowerBack() || GamesBack() || AppCloseBack() || ConnectionsBack() || AudioBack() || PerfBack() || ProgramsBack() || AmdTuningBack()) { Sound("voltar"); return; }
             if (returnToHome)
             {
                 returnToHome = false; motionPanelAxis = "home"; motionPanelDirection = -1; SetPanel(0);
                 FocusHome(homeReturnTag); Sound("voltar"); return;
             }
-            if (rail.Contains(Keyboard.FocusedElement as Button)) Dismiss();
-            else { rail[RailIndex(panel)].Focus(); Sound("voltar"); }
+            if (NavigationHasFocus()) Dismiss();
+            else { FocusNavigation(RailIndex(panel)); Sound("voltar"); }
         }
         void ChangePanel(int direction)
         {
             RestartDescriptionForInput();
+            if (ChangeSlidingTitle(direction)) return;
             int[] panels = RailOrder;
             int current = Keyboard.FocusedElement == rail[1] ? 1 : RailIndex(panel);
             int next = panels[(Array.IndexOf(panels, current) + direction + panels.Length) % panels.Length];
@@ -375,6 +381,7 @@ namespace XGBP.Design
         void NavigateFocus(string key)
         {
             var focused = Keyboard.FocusedElement as Control;
+            if (NavigateSlidingTitle(focused, key)) return;
             int index = rail.IndexOf(focused as Button);
             if (index >= 0)
             {
@@ -386,14 +393,15 @@ namespace XGBP.Design
                 return;
             }
             if (panel == 0 && NavigateHome(focused, key)) return;
-            if (panel == AmdPanel && NavigateAmd(focused, key)) return;
+            if (panel == AmdPanel && NavigateAmd(focused, key)) return; if (NavigateAmdTuning(focused, key)) return;
+            if (NavigatePrograms(focused, key)) return;
             if (NavigateAudio(focused, key)) return;
             var slider = focused as Slider;
             if (slider != null && (key == "ESQUERDA" || key == "DIREITA"))
             { slider.Value += key == "DIREITA" ? 5 : -5; return; }
-            if (key == "ESQUERDA") { rail[RailIndex(panel)].Focus(); return; }
+            if (key == "ESQUERDA") { FocusNavigation(RailIndex(panel)); return; }
             int pos = actions.IndexOf(focused);
-            if (pos < 0) { rail[RailIndex(panel)].Focus(); return; }
+            if (pos < 0) { FocusNavigation(RailIndex(panel)); return; }
             if (key == "CIMA" || key == "BAIXO")
                 for (int step = 1; step <= actions.Count; step++)
                 {
@@ -414,6 +422,7 @@ namespace XGBP.Design
         {
             if (!ActivationAllowed()) return;
             if (motionClosing) { if (e.Key == Key.Escape) Show(); e.Handled = true; return; }
+            if (ProgramsKey(e)) return; // texto da pesquisa de programas (ADR 0096)
             if (e.Key == Key.Escape) Back();
             else if (e.Key == Key.Q || e.Key == Key.PageUp) ChangePanel(-1);
             else if (e.Key == Key.E || e.Key == Key.PageDown) ChangePanel(1);
@@ -431,96 +440,6 @@ namespace XGBP.Design
             else return;
             e.Handled = true;
         }
-#if XGB_VERIFY
-        public void Verify()
-        {
-            // Renderiza a mesma arvore WPF e verifica transicoes sem pressionar teclas do usuario.
-            window.Width = 1920; window.Height = 1080; window.Left = -30000; window.Top = -30000;
-            window.Show(); window.UpdateLayout();
-            foreach (int index in new[] { 0, 3, 4, 5, 6 })
-            {
-                SetPanel(index);
-                if (index == 0) actions[0].Focus(); else rail[index].Focus();
-                window.UpdateLayout();
-                SaveRender("painel-" + index);
-            }
-            SetPanel(3); actions[0].Focus(); Back();
-            if (Keyboard.FocusedElement != rail[3]) throw new Exception("Falha: voltar ao trilho.");
-            Back(); if (window.IsVisible) throw new Exception("Falha: ocultar pelo trilho.");
-            RequestActivation("Win+G");
-            if (!window.IsVisible) throw new Exception("Falha: abrir por ativacao Win+G.");
-            RequestActivation("Win+G");
-            if (window.IsVisible) throw new Exception("Falha: ocultar por ativacao Win+G.");
-            // Biblioteca recebe foco no ciclo, sem despacho externo nem painel proprio.
-            Show(); SetPanel(0); rail[0].Focus(); ChangePanel(1);
-            if (panel != 0 || Keyboard.FocusedElement != rail[1]) throw new Exception("Falha: ancorar na Biblioteca.");
-            ChangePanel(1); if (panel != 6) throw new Exception("Falha: proximo painel.");
-            ChangePanel(-1); if (panel != 6 || Keyboard.FocusedElement != rail[1]) throw new Exception("Falha: voltar a Biblioteca.");
-            ChangePanel(-1); if (panel != 0) throw new Exception("Falha: painel anterior.");
-            ChangePanel(-1); if (panel != 4) throw new Exception("Falha: ciclo do painel anterior.");
-            Show(); window.UpdateLayout();
-            rail[0].Focus(); Navigate("BAIXO"); Navigate("BAIXO");
-            if (Keyboard.FocusedElement != rail[6]) throw new Exception("Falha: trilho sem Jogo atual.");
-            Navigate("DIREITA");
-            if ((string)((Control)Keyboard.FocusedElement).Tag != "output") throw new Exception("Falha: entrada do Som pela saida de som.");
-            VerifyAudioPanel();
-            VerifySystemPower();
-            VerifyReleaseSurface();
-            VerifyAppearancePreferences();
-            VerifyHome();
-            VerifyGames();
-            VerifyHomeGamesLayout();
-            VerifyOpenApps();
-            VerifyXboxOpenApps();
-            VerifyAppSwitchDelivery();
-            VerifyGameTransitions();
-            VerifySteamSessionRelease();
-            VerifyMedia();
-            VerifyMediaConflicts();
-            VerifyPerf();
-            VerifyBattery(); VerifyStatus(); VerifyHeadsetStatus();
-            VerifySteamActions();
-            VerifyWindowFocus();
-            VerifySteamInput();
-            VerifySettingsActions();
-            VerifyConnections();
-            VerifySettingsExtras();
-            VerifyStores();
-            VerifyRailFocus();
-            VerifySounds();
-            VerifyLaunchSettings();
-            VerifyDescriptions();
-            VerifyOperationFeedback();
-            VerifyActionHistory();
-            VerifyButtonIcons();
-            VerifyAmd();
-            VerifyAmdTuning();
-            VerifyCaptureCorrections();
-            VerifySettingToggles();
-            VerifyController();
-            VerifyActivation();
-            VerifyDesktopWinG();
-            VerifyGamePersistence(); VerifyLauncherChildren();
-            VerifyExitGamingMode(); VerifyTaskbarAutoHide(); VerifyAppVolume(); VerifySteamStatus();
-            VerifyKeyboard();
-            VerifyAccentTheme();
-            VerifyScene();
-            File.WriteAllText(Path.Combine(Output, "verificacao.txt"), "OK: 5 paineis renderizados (sem Jogo atual); camada sem titulo, selo, dicas ou botao de encerrar; cena responsiva em 8 telas (escala do Windows, area minima, margem segura, barra e status nos cantos, Home com cartoes proporcionais e rolagem quando necessaria); foco e atalho; ciclo e trilho sem Jogo atual; Som com player no topo, entrada pela saida de som, mute compacto e pelo slider, listas de dispositivos flutuantes sem deslocar controles e com foco preso, apps no painel principal, agrupamento por identidade/GUID, alvos em multiplas saidas, scroll/foco durante tracking e estado vazio; energia real com confirmacao e efeitos substituidos nos testes; Home com utilidades so por icones e nome do foco no titulo da secao; alternador de janelas, segurar 2 s mostra o X de fechar ao lado do icone (toque curto abre, Esc/foco recolhe, fechar pela janela, erro e janela que continua aberta), faixa com setas sobrepostas/degrade, paginacao sem ativar app, foco fora do esfumacado, scroll/foco, janela fechada, erros e confirmacao de foreground; player de midia com reproduzir/pausar, anterior/proxima, aleatorio, ciclo de repetir, posicao, volume/mute pelo mixer, troca de fonte, controles inativos pulados, erro e fonte encerrada; Desempenho com valores formatados sem rolagem, lista flutuante de modos de energia com foco preso, aplicacao so pela escolha, erro, estado sem HWiNFO, fora do plano Equilibrado e mapeamento de rotulos AMD/Intel/NVIDIA e dos rotulos reais AM5/RDNA4 (SVI3, TBP sem o limite, hotspot sem o maximo, FCLK/UCLK, DIMM, PresentMon fora); faixa de status com hora grande, rede (Ethernet, Wi-Fi por barras, sem internet, sem conexao, ilegivel) e DualSense com bateria (normal, baixa, carregando, erro, aguardando, troca e perda de dispositivo); Home e retorno; handlers Steam e erros; Configuracoes do Windows/Steam com despacho, ocultacao e erros; Conexoes (Wi-Fi e Bluetooth, redes e dispositivos conhecidos) com comandos substituidos, ver conexoes-verificacao.txt; Luz noturna, DSX e contorno vermelho dos botoes de fechar, ver configuracoes-extras-verificacao.txt; Lojas pelo acesso rapido, ver lojas-verificacao.txt.\r\nAudio, janelas, midia e lancamentos externos substituidos na verificacao; nao confirma tecla fisica, controle real ou telas externas. Ver verificacao de hardware de audio separada.\r\n", Encoding.UTF8);
-            File.AppendAllText(Path.Combine(Output, "verificacao.txt"), "Jogos: VDF textual/binario; catalogo multipla biblioteca, atalhos unsigned e wrappers; historico atomico/protegido; sessoes por executavel/PID+criacao, foco, minimizacao e recriacao; recentes reais com imagens locais em cache e simbolo de reserva, estados vazios, confirmacao de troca, despacho substituido, erro e timeout. Ver jogos-verificacao.txt.\r\n", Encoding.UTF8);
-            WriteLog("verificacao OK"); window.Hide();
-        }
-#endif
-
-#if XGB_VERIFY
-        void SaveRender(string name)
-        {
-            var scene = (FrameworkElement)window.FindName("Scene");
-            var bitmap = new RenderTargetBitmap((int)Math.Round(scene.ActualWidth), (int)Math.Round(scene.ActualHeight), 96, 96, PixelFormats.Pbgra32);
-            bitmap.Render(scene);
-            var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
-            using (var file = File.Create(Path.Combine(Output, name + ".png"))) encoder.Save(file);
-        }
-#endif
 
         // Idempotente e tolerante a falhas: tambem roda depois de um erro, entao cada etapa segue mesmo se a anterior falhar.
         public void Dispose()
@@ -541,9 +460,10 @@ namespace XGBP.Design
             try { DisposeKeyboard(); } catch (Exception ex) { WriteLog("teclado ao encerrar: " + ex.Message); }
             ReleaseSteamInputOnExit();
             AppDomain.CurrentDomain.UnhandledException -= OnFatalError;
-            clock.Stop(); repeat.Stop(); audioTimer.Stop(); openAppsTimer.Stop(); appSwitchTimer.Stop(); mediaTimer.Stop(); perfTimer.Stop(); gamesTimer.Stop(); connectionsTimer.Stop(); windowTraceTimer.Stop(); amdTimer.Stop(); amdMicTimer.Stop(); amdTuningTimer.Stop();
+            clock.Stop(); repeat.Stop(); audioTimer.Stop(); openAppsTimer.Stop(); appSwitchTimer.Stop(); mediaTimer.Stop(); perfTimer.Stop(); gamesTimer.Stop();
+                connectionsTimer.Stop(); windowTraceTimer.Stop(); amdTimer.Stop(); amdMicTimer.Stop(); amdTuningTimer.Stop();
             try { XGBP.Amd.AdlxGraphics.Shutdown(); } catch (Exception ex) { WriteLog("adlx ao encerrar: " + ex.Message); }
-            StopActivation();
+            StopActivation(); StopMicrophoneWatch(); try { StopTvIntegration(); } catch (Exception ex) { WriteLog("tv ao encerrar: " + ex.GetType().Name); }
             try { if (tray != null) { tray.Visible = false; tray.Dispose(); } } catch (Exception ex) { WriteLog("bandeja: " + ex.Message); }
             try { if (controller != null) controller.Stop(); } catch (Exception ex) { WriteLog("controle: " + ex.Message); }
             StopXInputGuide();

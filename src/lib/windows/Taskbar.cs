@@ -44,8 +44,8 @@ namespace XGBP.Desktop
         [StructLayout(LayoutKind.Sequential)] struct Rect { public int Left, Top, Right, Bottom; }
         [StructLayout(LayoutKind.Sequential)] struct Point { public int X, Y; }
         [StructLayout(LayoutKind.Sequential)] struct MonitorInfo { public int Size; public Rect Monitor, Work; public uint Flags; }
-        [StructLayout(LayoutKind.Sequential)] struct AppBarData { public int Size; public IntPtr Window; public uint Callback, Edge; public Rect Bounds;
-            public IntPtr Param; }
+        [StructLayout(LayoutKind.Sequential)] struct AppBarData { public int Size; public IntPtr Window; public uint Callback, Edge; public Rect Bounds; public
+            IntPtr Param; }
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern IntPtr FindWindow(string className, string title);
         [DllImport("shell32.dll")] static extern IntPtr SHAppBarMessage(uint message, ref AppBarData data);
         [DllImport("user32.dll")] static extern IntPtr MonitorFromPoint(Point point, uint flags);

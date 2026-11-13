@@ -50,8 +50,7 @@ namespace XGBP.Design
             Directory.CreateDirectory(Path.GetDirectoryName(taskbarMarker));
             File.WriteAllText(taskbarMarker, "Ocultacao automatica ligada pelo XGB_P no modo Xbox em " + DateTime.UtcNow.ToString("o") + "\r\n", Encoding.UTF8);
             bool confirmed = taskbarSet(true);
-            WriteLog("barra de tarefas: ocultacao automatica ligada no modo Xbox | confirmada=" + confirmed + " | antes: " + before + " | depois: " +
-                taskbarArea());
+    WriteLog("barra de tarefas: ocultacao automatica ligada no modo Xbox | confirmada=" + confirmed + " | antes: " + before + " | depois: " + taskbarArea());
         }
         void RestoreTaskbar(string reason)
         {
@@ -71,8 +70,8 @@ namespace XGBP.Design
         void AddTaskbarSetting()
         {
             var toggle = ToggleSetting(body, "Ocultar a barra de tarefas", !launchPreferences.KeepTaskbar, "xbox-taskbar", ToggleTaskbarSetting);
-            toggle.ToolTip = "Liga a ocultação automática da barra de tarefas ao entrar no modo Xbox e devolve ao sair, para os apps do desktop usarem a " +
-                "tela inteira.";
+            toggle.ToolTip = "Liga a ocultação automática da barra de tarefas ao entrar no modo Xbox e devolve ao sair, para os ap" +
+                "ps do desktop usarem a tela inteira.";
         }
         void ToggleTaskbarSetting()
         {
@@ -90,5 +89,6 @@ namespace XGBP.Design
             catch (Exception ex) { RebuildSettings("xbox-taskbar"); Feedback("Não foi possível alterar a barra de tarefas: " + ex.Message, FeedbackKind.Error);
                 WriteLog("barra de tarefas: preferencia falhou | " + ex.Message); }
         }
+
     }
 }

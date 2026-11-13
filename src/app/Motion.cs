@@ -222,6 +222,7 @@ namespace XGBP.Design
             int direction = motionPanelDirection != 0 ? motionPanelDirection : Math.Sign(Array.IndexOf(order, after) - Array.IndexOf(order, before));
             bool horizontal = motionPanelAxis == "home";
             motionPanelDirection = 0; motionPanelAxis = null;
+            if (RevealSlidingTitle(direction)) return;
             MotionReveal(MotionPart("PanelContent"), MotionNormal, horizontal ? direction * 24 : 0, horizontal ? 0 : direction * 24);
         }
         void WireMotion(Button button)
@@ -423,7 +424,6 @@ namespace XGBP.Design
         Button motionSetting;
         void AddMotionSetting()
         {
-            Caption("ACESSIBILIDADE");
             motionSetting = ToggleSetting(body, "Reduzir movimento", SystemMotionOff || motionReduced, "reduce-motion", ToggleReducedMotion);
             UpdateMotionSetting();
         }

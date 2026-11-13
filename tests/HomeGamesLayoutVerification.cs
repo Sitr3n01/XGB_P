@@ -40,8 +40,14 @@ namespace XGBP.Design
                     "recentes conservam a mesma proporcao dos jogos abertos");
                 check(Math.Abs(gameOpenRows[0][1].ActualHeight - cardHeight) < .5 && Math.Abs(gameOpenRows[0][2].ActualHeight - cardHeight) < .5,
                     "pausar e fechar acompanham a altura uniforme do cartao");
-                FocusHome("resume"); SettleMotion(); window.UpdateLayout(); PumpMotion(40); SaveRender("home-jogos-agrupados");
-                Navigate("BAIXO"); check(Keyboard.FocusedElement == gameOpenRows[0][0], "controle desce do principal para o outro aberto");
+                Func<string> where = () => { var f = Keyboard.FocusedElement; return f == null ? "nulo" : f.GetType().Name + ":" + FocusedTag(); };
+                FocusHome("resume"); string t1 = where(); SettleMotion(); window.UpdateLayout(); string t2 = where(); PumpMotion(40); string t3 = where();
+                SaveRender("home-jogos-agrupados");
+                string fromTag = where() + " (apos FocusHome " + t1 + ", Settle " + t2 + ", Pump " + t3 + ")"; Navigate("BAIXO");
+                check(Keyboard.FocusedElement == gameOpenRows[0][0], "controle desce do principal para o outro aberto" +
+                    (Keyboard.FocusedElement == gameOpenRows[0][0] ? "" : ": de " + fromTag + " para " + FocusedTag() + ", linha " + homeRows.FindIndex(r =>
+                        r.Contains(Keyboard.FocusedElement as Control)) +
+                    ", principal na linha " + homeRows.IndexOf(gameResumeRow) + ", outro na linha " + homeRows.IndexOf(gameOpenRows[0])));
                 Navigate("DIREITA"); check(Keyboard.FocusedElement == gameOpenRows[0][1], "pausa continua a direita do cartao");
                 gamesView.Current = second; RenderGames(false); window.UpdateLayout();
                 check(PrimaryGameTitle() == "Neva" && (string)((Control)Keyboard.FocusedElement).Tag == "pause-fixture:one",
@@ -65,9 +71,9 @@ namespace XGBP.Design
                     "cancelar retorna ao fechar do jogo escolhido no grupo de abertos");
                 gamesView.Current = primary; RenderGames(false);
                 gamesView.Activities.Remove(second); RenderGames(false);
-                check(gameOpenRows.Count == 0 && gamesView.ClosedRecent().Exists(e => e.Key == second.Key), "jogo fechado migra para recentes e sai do grupo aberto");
+            check(gameOpenRows.Count == 0 && gamesView.ClosedRecent().Exists(e => e.Key == second.Key), "jogo fechado migra para recentes e sai do grupo aberto");
                 SelectGame(second.Key); SettleMotion(); window.UpdateLayout();
-                check(TextOnlyGameOption("game-confirm") && TextOnlyGameOption("game-cancel"), "troca de jogo tambem apresenta opcoes sem icones ou coluna vazia");
+            check(TextOnlyGameOption("game-confirm") && TextOnlyGameOption("game-cancel"), "troca de jogo tambem apresenta opcoes sem icones ou coluna vazia");
                 check((string)((Control)Keyboard.FocusedElement).Tag == "game-cancel", "troca de jogo comeca em Cancelar");
                 var option = (Button)actions.Find(c => (string)c.Tag == "game-confirm");
                 check(((TextBlock)((StackPanel)((Grid)option.Content).Children[0]).Children[0]).Text == "Fechar jogo e iniciar",

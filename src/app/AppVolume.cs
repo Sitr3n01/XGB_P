@@ -32,8 +32,9 @@ namespace XGBP.Design
     {
         const float AppVolumeFactor = .5f, AppVolumeTolerance = .02f;
         const int AppVolumeSteps = 5, AppVolumeStepMs = 30;
-        static readonly string AppVolumeJournalFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "XGB_P",
-            "settings", "volume-reduzido.json");
+        static readonly string AppVolumeJournalFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "XGB_P", "settings",
+            "volume-reduzido.json");
         readonly object appVolumeLock = new object();
         // Estado do worker, so dentro de appVolumeLock: sessoes reduzidas agora e sessoes que sairam antes de restaurar.
         List<AppVolumeEntry> appVolumeDucked = new List<AppVolumeEntry>(), appVolumePending = new List<AppVolumeEntry>();
@@ -55,8 +56,7 @@ namespace XGBP.Design
             appVolumeRun = delegate(Action work) { Task.Factory.StartNew(delegate { try { work(); } catch (Exception ex) { WriteLog("volume do app: falha | " +
                 ex.Message); } }); };
             appVolumeSleep = Thread.Sleep;
-            if (File.Exists(appVolumeJournal)) appVolumeRun(delegate { lock (appVolumeLock) { LoadAppVolumeJournal(); RecoverAppVolume("abertura do XGB_P");
-                } });
+    if (File.Exists(appVolumeJournal)) appVolumeRun(delegate { lock (appVolumeLock) { LoadAppVolumeJournal(); RecoverAppVolume("abertura do XGB_P"); } });
         }
 
         // UI: o app da frente antes de abrir. Com janela de jogo, todos os processos do jogo (lancador e filhos).
@@ -168,8 +168,8 @@ namespace XGBP.Design
                 float low = Math.Min(e.Target, e.Original) - AppVolumeTolerance, high = Math.Max(e.Target, e.Original) + AppVolumeTolerance;
                 foreach (var s in live)
                 {
-                    if (s.Level >= low && s.Level <= high) { fix.Add(new SessionLevel { DeviceId = s.DeviceId, SessionId = s.SessionId, Level = e.Original });
-                        restored++; }
+                if (s.Level >= low && s.Level <= high) { fix.Add(new SessionLevel { DeviceId = s.DeviceId, SessionId = s.SessionId, Level =
+                    e.Original }); restored++; }
                     else kept++;
                 }
             }
@@ -222,8 +222,8 @@ namespace XGBP.Design
         void AddAppVolumeSetting()
         {
             var toggle = ToggleSetting(body, "Abaixar o som do app ao abrir", !launchPreferences.KeepAppVolume, "app-volume", ToggleAppVolumeSetting);
-            toggle.ToolTip = "Ao abrir a barra, o som do jogo ou app em foco cai pela metade e volta ao fechar. Ajustes feitos no mixer com a barra aberta " +
-                "são mantidos.";
+            toggle.ToolTip = "Ao abrir a barra, o som do jogo ou app em foco cai pela metade e volta ao fechar. Ajustes feitos no " +
+                "mixer com a barra aberta são mantidos.";
         }
         void ToggleAppVolumeSetting()
         {
@@ -236,8 +236,8 @@ namespace XGBP.Design
                     "Salvo. Na próxima abertura, o som do app em foco cai pela metade enquanto a barra estiver aberta.");
                 WriteLog("volume do app: preferencia abaixar ao abrir=" + !next.KeepAppVolume);
             }
-            catch (Exception ex) { RebuildSettings("app-volume"); Feedback("Não foi possível salvar a preferência de volume.", FeedbackKind.Error);
-                WriteLog("volume do app: preferencia falhou | " + ex.Message); }
+            catch (Exception ex) { RebuildSettings("app-volume"); Feedback("Não foi possível salvar a preferência de volume.", FeedbackKind.Error); WriteLog(
+                "volume do app: preferencia falhou | " + ex.Message); }
         }
     }
 }

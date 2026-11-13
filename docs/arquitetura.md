@@ -1,4 +1,4 @@
-# Arquitetura do XGB_P · V.2.1.0
+# Arquitetura do XGB_P · V.3.0.0
 
 Aplicativo residente WPF, x64, em C# 5 sobre o .NET Framework 4.8 que vem com o Windows. Um único processo, sem serviço, driver ou runtime extra. A interface é uma `partial class Preview` em `src/app`; as integrações com o sistema ficam em bibliotecas por área em `src/lib`.
 
@@ -14,6 +14,7 @@ Aplicativo residente WPF, x64, em C# 5 sobre o .NET Framework 4.8 que vem com o 
 | `src/lib/audio`, `src/lib/media` | Core Audio (dispositivos, volume, mixer) e sessões de mídia do Windows (SMTC) |
 | `src/lib/hardware`, `src/lib/network`, `src/lib/display` | Métricas (HWiNFO, RTSS, modo de energia), estado da rede e rádios, Luz noturna |
 | `src/lib/amd` | Captura do Radeon ReLive pela ferramenta de comandos da AMD e ajustes globais pelo ADLX |
+| `src/lib/tv`, `src/lib/power` | TV Tizen local, credenciais DPAPI, fila/política de energia, observação de retomada e CycleId |
 | `tests/` | Suítes de verificação, compiladas só no `XGB_P.Tests.exe` |
 
 ## Ativação
@@ -54,6 +55,10 @@ O catálogo junta bibliotecas da Steam, atalhos e lojas instaladas. Sessões sã
 ## Apresentação
 
 As transições medem o conteúdo no tamanho final e animam por superfícies e recorte, sem redimensionar o texto a cada passo. Cópias decorativas são vetoriais e limitadas; os temporizadores de apresentação só rodam quando necessários ([ADR 0057](decisoes/0057-apresentacao-com-custo-limitado.md)). Observadores, filas e caches têm limites e cancelamento. Movimento reduzido do Windows prevalece.
+
+## TV e retomada
+
+O host usa o leitor HID existente e eventos de energia. A integração importa configuração local ou carrega `%LOCALAPPDATA%\XGB_P\tv`, sem um alvo fixo. Automação é optativa; rede não confirma energia e o toggle não se repete depois de entrega possível. Registros por ciclo ficam em `wake-trace`; PS pós-retomada não comprova a causa física. Ver os guias da [TV](guias/tv-samsung-integrada.md) e do [despertar](guias/despertar-pelo-ps.md).
 
 ## Build e verificação
 

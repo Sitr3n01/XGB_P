@@ -57,7 +57,7 @@ namespace XGBP.Design
             }
         }
     }
-    sealed class KeyboardTarget { public uint Pid; public string Path, Name; }
+    sealed class KeyboardTarget { public uint Pid; public string Path, Name; public long Created; }
 
     sealed partial class Preview
     {
@@ -226,7 +226,7 @@ namespace XGBP.Design
         {
             if (disposed || target == IntPtr.Zero) return;
             EnsureKeyboardWindow();
-            bool wasVisible = kbVisible, resume = kbSuspended && target == kbTarget;
+            bool wasVisible = kbVisible, resume = kbSuspended && target == kbTarget, same = target == kbTarget;
             kbMode = mode; kbSuspended = false; kbResumeUntil = DateTime.MinValue; kbAutoHideAt = DateTime.MaxValue;
             if (wasVisible && target != kbTarget) KbSteamEnd(false);
             SetKeyboardTarget(target);
@@ -247,6 +247,7 @@ namespace XGBP.Design
                 if (!resume) Sound("lista");
             }
             KbSteamBegin();
+            KbComposeBegin(resume || wasVisible && same); // jogo: compor e enviar (ADR 0101)
             UpdateKeyboardStatus();
             WriteLog("teclado: " + (wasVisible ? "novo destino" : resume ? "retomado" : "aberto") + " | " + mode + " | " + reason + " | " + KbTargetDescribe());
             EnsureKeyboardWatcher();
@@ -255,7 +256,7 @@ namespace XGBP.Design
         {
             if (!kbVisible && !kbSuspended) return;
             bool shown = kbVisible;
-            kbVisible = false; kbSuspended = false;
+            kbVisible = false; kbSuspended = false; KbComposeEnd();
             KbResetInput(true);
             KbSteamEnd(kbForeground() == kbTarget);
             kbSteamRestore = null;
@@ -266,6 +267,7 @@ namespace XGBP.Design
         }
         void CloseKeyboardByUser()
         {
+            if (KbComposeClose()) return; // sobre jogo: cancela e devolve o foco depois de soltar
             // Fechado num campo: nao reabre sozinho ali ate o foco ir para outro elemento.
             if (kbMode == "auto" && kbFocus != null && kbFocus.Window == kbTarget && kbFocus.Key != null) kbDismissedKey = kbFocus.Key;
             HideKeyboard("fechado pelo usuario", true);
@@ -304,7 +306,7 @@ namespace XGBP.Design
             KeyboardTarget info = null;
             try { info = kbDescribe(hwnd); } catch (Exception) { }
             kbTargetPid = info == null ? 0 : info.Pid;
-            kbTargetPath = info == null ? null : info.Path;
+            kbTargetPath = info == null ? null : info.Path; kbTargetCreated = info == null ? 0 : info.Created;
             kbTargetName = info == null || string.IsNullOrWhiteSpace(info.Name) ? "app" : info.Name;
             int? level = null;
             try { level = kbIntegrity(kbTargetPid); } catch (Exception) { }
@@ -325,7 +327,7 @@ namespace XGBP.Design
                 if (string.IsNullOrWhiteSpace(name)) name = Path.GetFileNameWithoutExtension(path);
             }
             if (string.IsNullOrWhiteSpace(name)) { var title = new StringBuilder(256); KbGetWindowText(hwnd, title, title.Capacity); name = title.ToString(); }
-            return new KeyboardTarget { Pid = pid, Path = path, Name = name };
+            return new KeyboardTarget { Pid = pid, Path = path, Name = name, Created = GameControl.ProcessCreated(pid) };
         }
         string KbTargetDescribe()
         {
@@ -374,6 +376,7 @@ namespace XGBP.Design
                 }
             }
             if (!kbVisible) return;
+            KbComposeTick(now); if (!kbVisible) return;
             if (kbSteamGate && now >= kbSteamGateUntil) KbSteamReady(kbSteamEpoch, null, "limite");
             if (kbNotice != null && now >= kbNoticeUntil) { kbNotice = null; UpdateKeyboardStatus(); }
             if (kbMode == "auto" && now >= kbAutoHideAt) { HideKeyboard("o foco saiu do campo", false); return; }
@@ -395,9 +398,9 @@ namespace XGBP.Design
         // Manual: o teclado digita no app da frente, inclusive depois de um Alt+Tab mandado por ele.
         void KbRetarget(IntPtr foreground, string reason)
         {
-            KbSteamEnd(false); // o foco ja mudou: so liberar
+            KbSteamEnd(false); KbComposeEnd(); // o foco ja mudou: so liberar
             SetKeyboardTarget(foreground);
-            KbSteamBegin();
+            KbSteamBegin(); KbComposeBegin(false);
             UpdateKeyboardStatus(); PlaceKeyboard();
             WriteLog("teclado: " + reason + " | " + KbTargetDescribe());
         }
@@ -419,6 +422,7 @@ namespace XGBP.Design
             if (guideCycleActive || guideDownDevices.Count > 0) return true;
             if (e.Gesture == "SEGURADO") return true;
             bool was = KbHeld(e.Button); kbHeld[e.Button] = e.Down;
+            if (kbComposeFinishing != null) return true; // devolvendo o foco ao jogo: nada mais e tecla
             if (DirectionEvent(e.Button)) { if (!kbSteamGate) KbDirections(); return true; }
             if (e.Button == "R2") { if (e.Down != was) { kbCtrlHeld = e.Down; UpdateKeyVisuals(); } return true; }
             // A Steam ainda tem o controle (ADR 0043): so fechar; teclar agora tambem agiria no Big Picture ou no jogo.
@@ -437,7 +441,7 @@ namespace XGBP.Design
                 case "L2": KbLayer(kbLayer.Name == "letters" ? "symbols" : "letters"); break;
                 case "L3": KbToggleModifier(KeyModifiers.Shift); break;
                 case "R3": KbSwapDock(); break;
-                case "MUTE": KbAction("dictation"); break;
+                case "MUTE": break; // fica com o DSX, que alterna o mudo do microfone no mesmo aperto (ADR 0107); o ditado e a tecla da tela
                 case "CREATE": KbAction("emoji"); break;
                 case "TOUCHPAD": KbLayer("full"); break;
             }
@@ -635,6 +639,7 @@ namespace XGBP.Design
         // Toque de verdade no app da frente. Com o app em outro nivel de integridade ou fora da frente, nada sai.
         bool KbSend(KeyStroke stroke)
         {
+            if (kbCompose) return KbComposeStroke(stroke);
             if (!KbTargetReady()) return false;
             int expected = TextInput.Expected(stroke), sent;
             try { sent = kbSend(stroke); }
@@ -779,7 +784,7 @@ namespace XGBP.Design
         }
         void UpdateKeyboardStatus()
         {
-            if (kbStatus == null) return;
+            if (kbStatus == null || KbComposeStatus()) return;
             string text; bool warn = false;
             if (kbNotice != null && controllerNow() < kbNoticeUntil) { text = kbNotice; warn = true; }
             else if (kbSteamGate) text = "Aguardando a Steam soltar o controle…";
@@ -897,7 +902,7 @@ namespace XGBP.Design
         // foco, ADR 0041). Enquanto a Steam nao confirma, o teclado fica apagado e so o ○ fecha, como a barra (ADR 0043).
         void KbSteamBegin()
         {
-            if (kbSteamHeld || kbBlocked || kbTargetPath == null || !kbSteamOwned(kbTargetPath)) return;
+            if (kbSteamHeld || kbBlocked || !KbSteamTarget()) return;
             bool available;
             try { available = steamInputAvailable(); } catch (Exception) { available = false; }
             if (!available) return;
@@ -976,7 +981,6 @@ namespace XGBP.Design
 
         void AddKeyboardSettings()
         {
-            Caption("TECLADO VIRTUAL");
             var auto = ToggleSetting(body, "Abrir sozinho no modo Xbox", kbPrefs.AutoOpen, "keyboard-auto", ToggleKeyboardAuto);
             auto.ToolTip = "No modo Xbox, o teclado abre quando um campo de texto recebe o foco. Steam e DSX ficam de fora; a Steam tem o teclado dela.";
             var position = ConnectionButton(body, "Posição do teclado", KbPositionText(kbPrefs.Position), "keyboard-position", CycleKeyboardPosition);
@@ -1031,22 +1035,6 @@ namespace XGBP.Design
             if (kbWindow != null) { try { kbWindow.Close(); } catch (Exception) { } kbWindow = null; }
         }
 
-#if XGB_VERIFY
-        // Diagnostico somente leitura: le o campo em foco e a integridade do app da frente; nenhuma tecla e enviada.
-        public void VerifyKeyboardLive()
-        {
-            var info = TextFocusWatcher.Query(KeyboardExcludedPath);
-            int own = ProcessIntegrity.Current();
-            int? front = null;
-            if (info.WindowProcess != 0) front = ProcessIntegrity.Level(info.WindowProcess);
-            var prefs = KeyboardSettings.Load();
-            string report = "Campo em foco: " + info.Describe() + ".\r\nIntegridade: barra=" + ProcessIntegrity.Name(own) + "; app da frente=" + ProcessIntegrity.Name(front) +
-                ".\r\nPreferencias: abrir sozinho=" + prefs.AutoOpen + "; posicao=" + prefs.Position + "; sons=" + prefs.KeySounds +
-                ".\r\nPlano de Ctrl+C: " + TextInput.Describe(TextInput.Plan(KeyStroke.Key(0x43, KeyModifiers.Ctrl))) +
-                ".\r\nDiagnostico somente leitura: sem ganchos, sem SendInput, sem abrir o teclado.\r\n";
-            File.WriteAllText(Path.Combine(Output, "teclado-real.txt"), report, Encoding.UTF8);
-        }
-#endif
 
         [StructLayout(LayoutKind.Sequential)] struct KbRect { public int Left, Top, Right, Bottom; }
         [StructLayout(LayoutKind.Sequential)] struct KbMonitorInfo { public int Size; public KbRect Monitor, Work; public uint Flags; }

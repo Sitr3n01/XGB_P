@@ -10,13 +10,15 @@ Barra de jogo para o modo Xbox do Windows 11, com Steam Big Picture e DualSense 
 - [HidHide](https://github.com/nefarius/HidHide) com o `XGB_P.exe` liberado (abaixo).
 - Opcionais: AMD Software: Adrenalin Edition, para os painéis Gravação e AMD; HWiNFO (memória compartilhada ligada) e RTSS, para o painel Desempenho. Sem eles, os painéis mostram o recurso como indisponível.
 
+A árvore de fontes está na candidata 3.0.0; esta atualização ainda não criou release no GitHub. As instruções de download valem para uma release efetivamente disponível.
+
 ## Instalar
 
 1. Baixe o `XGB_P-<versão>-win-x64.zip` e o `SHA256SUMS.txt` da mesma [release](https://github.com/Sitr3n01/XGB_P/releases).
 2. Confira o hash e compare com o `SHA256SUMS.txt`:
 
    ```powershell
-   Get-FileHash .\XGB_P-2.1.0-win-x64.zip -Algorithm SHA256
+   Get-FileHash .\XGB_P-3.0.0-win-x64.zip -Algorithm SHA256
    ```
 
 3. Extraia numa pasta fixa, por exemplo `%LOCALAPPDATA%\Programs\XGB_P`. Não deixe o executável em Downloads: o caminho é usado pelo HidHide e pela inicialização com o Windows.
@@ -59,6 +61,12 @@ Abra o `XGB_P.exe` pelo Explorer. O app começa na bandeja, com uma instância p
 
 **Abra pelo Explorer, por um atalho ou pela inicialização do Windows,** e não a partir de um app empacotado (como apps de assistentes de IA). Esses apps virtualizam o `%LOCALAPPDATA%` dos processos que iniciam: o XGB_P aberto por eles grava numa cópia privada dos dados e é encerrado quando o app é atualizado.
 
+## Recursos da 3.0.0
+
+Em Configurações → Interface, **Trilho lateral** aplica e salva a escolha na hora. Sem trilho, use a seta à direita do título ou L1/R1. Programas fica no Acesso rápido. No teclado manual sobre jogos, Menu envia o texto e Círculo cancela. A faixa acompanha o mudo do microfone padrão e a bateria de fones suportados pelo G HUB local.
+
+TV Samsung é opcional e depende de configuração local: [guia](tv-samsung-integrada.md). O despertar pelo PS tem [diagnóstico e scripts reversíveis](despertar-pelo-ps.md); o aplicativo não altera sozinho as permissões.
+
 ## Energia
 
 **Suspender**, **Reiniciar** e **Desligar** fazem pedidos reais ao Windows, depois de uma segunda confirmação com o foco em **Cancelar**. Salve seu trabalho antes.
@@ -69,6 +77,8 @@ Abra o `XGB_P.exe` pelo Explorer. O app começa na bandeja, com uma instância p
 |---|---|
 | `%LOCALAPPDATA%\XGB_P\settings` | Preferências e, só quando há o que restaurar, `barra-tarefas-modo-xbox.txt` e `volume-reduzido.json` |
 | `%LOCALAPPDATA%\XGB_P\games` | Catálogo, histórico e diário de pausas |
+| `%LOCALAPPDATA%\XGB_P\tv` | Configuração e credencial local da TV, protegida por DPAPI |
+| `%LOCALAPPDATA%\XGB_P\wake-trace` | Registros de retomada por CycleId; podem conter IDs de dispositivos e XML do evento Windows |
 | `%LOCALAPPDATA%\XGB_P\history` | Histórico de ações (7 dias, até 300) |
 | `%LOCALAPPDATA%\XGB_P\sons` | Sons da interface, opcionais (abaixo) |
 | `logs\xgb.log`, ao lado do executável (em `%LOCALAPPDATA%\XGB_P\logs` se o app estiver em Program Files) | Log de uso, com rotação |

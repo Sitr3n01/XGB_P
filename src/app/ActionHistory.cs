@@ -176,6 +176,8 @@ namespace XGBP.Design
                 case "9": return "AMD";
                 case "5/wifi": return "Wi-Fi";
                 case "5/bluetooth": return "Bluetooth";
+                case "5/tv": return "TV Samsung";
+                case "5/wake": return "Retomada pelo PS";
             }
             return scope != null && scope.StartsWith("5/", StringComparison.Ordinal) ? "Configurações" : "XGB_P";
         }
@@ -192,7 +194,6 @@ namespace XGBP.Design
         // Configuracoes: entrada do historico, com a contagem de problemas ainda nao vistos.
         void AddHistorySetting()
         {
-            Caption("ATIVIDADE");
             int fresh = UnseenProblems(), total = actionHistory.Count;
             string detail = fresh > 0 ? fresh + (fresh == 1 ? " problema novo" : " problemas novos") : total == 0 ? "Vazio" : total + (total == 1 ? " registro" : " registros");
             var row = ConnectionButton(body, "Histórico de ações e problemas", detail + "  ›", "page-history", OpenHistoryPage);

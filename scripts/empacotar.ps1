@@ -22,7 +22,8 @@ Copy-Item -LiteralPath $exe -Destination $staging
 Copy-Item -LiteralPath (Join-Path $repo 'docs\guias\instalacao-e-uso.md') -Destination (Join-Path $staging 'LEIA-ME.md')
 Copy-Item -LiteralPath (Join-Path $repo 'LICENSE') -Destination (Join-Path $staging 'LICENSE.txt')
 Copy-Item -LiteralPath (Join-Path $repo 'NOTICE') -Destination (Join-Path $staging 'NOTICE.txt')
-$expected = @('XGB_P.exe', 'LEIA-ME.md', 'LICENSE.txt', 'NOTICE.txt')
+Copy-Item -LiteralPath (Join-Path $repo 'licenses\Controllercons-OFL-1.1.txt') -Destination $staging
+$expected = @('XGB_P.exe', 'LEIA-ME.md', 'LICENSE.txt', 'NOTICE.txt', 'Controllercons-OFL-1.1.txt')
 
 $archive = Join-Path $output ($name + '.zip')
 Compress-Archive -LiteralPath @($expected | ForEach-Object { Join-Path $staging $_ }) -DestinationPath $archive -CompressionLevel Optimal

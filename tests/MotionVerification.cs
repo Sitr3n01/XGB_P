@@ -126,11 +126,13 @@ namespace XGBP.Design
             // Abrir do zero desloca os filhos diretos do corpo; acionar um deles pelo clique derrubava a previa (crash de 2026-10-24 09:32).
             // A linha conferida precisa estar na area visivel ao abrir: a pagina pode ter ficado rolada no fim (ADRs 0091/0092).
             ((ScrollViewer)MotionPart("BodyScroll")).ScrollToVerticalOffset(0); window.UpdateLayout();
-            Show(); PumpMotion(350); lastSettingsUri = null;
-            var row = (Button)actions.Find(c => (string)c.Tag == "windows-settings");
+            // Desde a ADR 0112 a primeira linha visivel e Dispositivos Bluetooth (Configuracoes do Windows foi para o fim da lista).
+            Show(); PumpMotion(350);
+            var row = (Button)actions.Find(c => (string)c.Tag == "page-bluetooth");
             MotionAssert(row.Parent == body && row.RenderTransform is TransformGroup && MotionScale(row) != null, "abertura do zero trocou a escala da linha das Configuracoes");
             row.Focus(); Activate();
-            MotionAssert(!window.IsVisible && lastSettingsUri == WindowsSettingsUri, "linha das Configuracoes depois de abrir do zero");
+            MotionAssert(window.IsVisible && settingsPage == "bluetooth", "linha das Configuracoes depois de abrir do zero");
+            Back(); PumpMotion(350); Hide();
             SetPanel(0); Show(); PumpMotion(350); FocusHome("steam-home");
             findBigPicture = delegate { return new XGBP.Desktop.WindowObservation { Window = openApps[0] }; };
             existingWindowAvailable = delegate { return true; };

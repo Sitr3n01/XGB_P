@@ -45,9 +45,11 @@ namespace XGBP.Games
             Launcher(found, "itch", "itch", Protocol("itch") ?? Existing(@"%LOCALAPPDATA%\itch\itch.exe"));
             Launcher(found, "heroic", "Heroic Games Launcher", Protocol("heroic") ?? Existing(@"%LOCALAPPDATA%\Programs\heroic\Heroic.exe"));
             Packaged(found, "msstore", "Microsoft Store", "Loja da Microsoft", "Microsoft.WindowsStore_8wekyb3d8bbwe", "App");
-            foreach (var store in found) store.IconPng = Icon(store.IconSource);
+            foreach (var store in found) store.IconPng = ShellIcon(store.IconSource);
             return found;
         }
+        // Lojas e a pesquisa de programas (ADR 0096) leem icones em threads proprias: o cache fica sob trava.
+        public static byte[] ShellIcon(string source) { lock (Icons) return Icon(source); }
         public static void Open(GameStore store)
         {
             Process.Start(new ProcessStartInfo { FileName = store.Target, UseShellExecute = true });

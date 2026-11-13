@@ -40,7 +40,7 @@ function Invoke-XgbStaticChecks {
 
     # Windows PowerShell transforma avisos de stderr em NativeCommandError; o codigo de saida e a autoridade.
     $ErrorActionPreference = 'Continue'
-    $tracked = @(& git -C $Repository ls-files 2>$null)
+    $tracked = @(& git -C $Repository ls-files --cached --others --exclude-standard 2>$null)
     $gitCode = $LASTEXITCODE
     $diff = & git -C $Repository diff --check 2>&1
     $diffCode = $LASTEXITCODE
@@ -52,7 +52,7 @@ function Invoke-XgbStaticChecks {
     # A ponte com identidade de pacote da Microsoft e estritamente local e nunca entra neste repositorio.
     $publisher = 'CN=Microsoft ' + 'Corporation'
     foreach ($path in $tracked) {
-        if ($path -notmatch '\.(cs|ps1|xml|manifest|xaml|json|md|yml|yaml|toml)$') { continue }
+        if ($path -notmatch '\.(cs|ps1|xml|manifest|xaml|svg|json|md|yml|yaml|toml|txt)$') { continue }
         $content = [IO.File]::ReadAllText((Join-Path $Repository $path))
         if ($content.Contains($publisher)) { throw "Identidade de publicador da Microsoft encontrada em $path." }
     }

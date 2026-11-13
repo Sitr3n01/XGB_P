@@ -57,8 +57,7 @@ namespace XGBP.Design
 
                 launchPreferences = new LaunchPreferenceState { KeepAppVolume = true }; ReduceAppVolumeOnOpen();
                 check(near(main.Level, .8f), "opcao desligada nao muda o som"); launchPreferences = new LaunchPreferenceState();
-                previousWindow = new WindowObservation { Window = new DesktopWindow { Handle = new IntPtr(1), ProcessId = OwnProcessId } };
-                    ReduceAppVolumeOnOpen();
+            previousWindow = new WindowObservation { Window = new DesktopWindow { Handle = new IntPtr(1), ProcessId = OwnProcessId } }; ReduceAppVolumeOnOpen();
                 previousWindow = null; ReduceAppVolumeOnOpen();
                 check(near(main.Level, .8f) && near(other.Level, .6f), "sem app na frente, ou com a propria barra, nada muda");
                 previousWindow = new WindowObservation { Window = new DesktopWindow { Handle = new IntPtr(77), ProcessId = 600, ProcessCreated = 1 } };
@@ -68,8 +67,7 @@ namespace XGBP.Design
 
                 int steps = 0; appVolumeSleep = delegate { if (++steps == 2) RestoreAppVolumeOnClose("teste"); };
                 ReduceAppVolumeOnOpen(); appVolumeSleep = delegate { };
-                check(near(main.Level, .8f) && near(child.Level, 1f) && !File.Exists(appVolumeJournal),
-                    "fechar no meio da rampa de reducao devolve o original");
+check(near(main.Level, .8f) && near(child.Level, 1f) && !File.Exists(appVolumeJournal), "fechar no meio da rampa de reducao devolve o original");
 
                 // O Windows guarda o nivel por app: quem fecha com o som reduzido volta ao original quando reabrir.
                 ReduceAppVolumeOnOpen(); table.Remove(main); RestoreAppVolumeOnClose("teste");
@@ -83,17 +81,16 @@ namespace XGBP.Design
                 table.Remove(changed); main = add("jogo", 500, .4f);
 
                 GameFiles.Write(appVolumeJournal, new AppVolumeJournal { Entries = new List<AppVolumeEntry> {
-                    new AppVolumeEntry { DeviceId = "saida", SessionId = "jogo|1", SessionKey = "jogo", Original = .8f, Target = .4f,
-                        SavedUtc = DateTime.UtcNow.ToFileTimeUtc() },
-                    new AppVolumeEntry { DeviceId = "saida", SessionId = "filho|1", SessionKey = "filho", Original = .2f, Target = .1f,
-                        SavedUtc = DateTime.UtcNow.AddDays(-8).ToFileTimeUtc() } } });
+                    new AppVolumeEntry { DeviceId = "saida", SessionId = "jogo|1", SessionKey = "jogo", Original = .8f, Target = .4f, SavedUtc =
+                        DateTime.UtcNow.ToFileTimeUtc() },
+                    new AppVolumeEntry { DeviceId = "saida", SessionId = "filho|1", SessionKey = "filho", Original = .2f, Target = .1f, SavedUtc =
+                        DateTime.UtcNow.AddDays(-8).ToFileTimeUtc() } } });
                 child.Level = .1f;
                 lock (appVolumeLock) { LoadAppVolumeJournal(); RecoverAppVolume("teste"); }
                 check(near(main.Level, .8f) && near(child.Level, .1f) && !File.Exists(appVolumeJournal),
                     "diario de uma queda restaura pelo identificador persistente e descarta entradas antigas");
                 File.WriteAllText(appVolumeJournal, "{invalido", Encoding.UTF8);
-                lock (appVolumeLock) LoadAppVolumeJournal(); check(File.Exists(appVolumeJournal),
-                    "diario ilegivel nao derruba a barra nem e apagado na leitura");
+            lock (appVolumeLock) LoadAppVolumeJournal(); check(File.Exists(appVolumeJournal), "diario ilegivel nao derruba a barra nem e apagado na leitura");
                 File.Delete(appVolumeJournal); child.Level = 1f;
 
                 Hide(); Show(); previousWindow = new WindowObservation { Window = gameWindow }; ReduceAppVolumeOnOpen();

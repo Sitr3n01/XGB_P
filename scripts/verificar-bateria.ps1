@@ -30,7 +30,8 @@ $flags += '--verify-apps-close-live'
 if (-not $SemLeituras) {
     $flags += '--verify-games-live', '--verify-connections-live', '--verify-stores-live', '--verify-audio-live', '--verify-windows-live',
         '--verify-media-live', '--verify-perf-live', '--verify-status-live', '--verify-sounds-live', '--verify-launch-live',
-        '--verify-activation-live', '--verify-keyboard-live', '--verify-accent-live', '--verify-observer-live'
+        '--verify-activation-live', '--verify-keyboard-live', '--verify-accent-live', '--verify-observer-live',
+        '--verify-programs-live', '--verify-wake-live', '--verify-tv-live'
 }
 $receipts = @()
 foreach ($flag in $flags) {

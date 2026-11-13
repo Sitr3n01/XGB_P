@@ -53,34 +53,17 @@ namespace XGBP.Design
             steamHomeButton.Padding = new Thickness(14, 10, 14, 10);
             body.Children.Add(steamHomeButton); homeRows.Add(new List<Control> { steamHomeButton });
 
+            // Inicio, Voltar ao jogo, Acesso rapido, Aplicativos abertos, Jogos recentes e o player por ultimo.
             BuildGameResume();
+
+            BuildHomeUtilities();
 
             BuildOpenApps();
 
             BuildGameRecents();
 
-            // O player fica entre os recentes e o acesso rapido.
             BuildMediaPlayer();
-            utilitiesHint = HomeCaption("ACESSO RÁPIDO");
-            var utilities = new Grid();
-            string[] labels = { "Biblioteca", "Lojas", "Downloads", "Teclado", "Áudio", "Desempenho", "Energia" };
-            string[] glyphs = { "", "", "", "", "", "", "" };
-            string[] tags = { "utility-library", "utility-stores", "utility-downloads", "utility-keyboard", "utility-audio", "utility-performance", "utility-power" };
-            for (int i = 0; i < tags.Length; i++) utilities.ColumnDefinitions.Add(new ColumnDefinition());
-            var controls = homeUtilities; controls.Clear();
-            for (int col = 0; col < tags.Length; col++)
-            {
-                string tag = tags[col];
-                var button = HomeButton(Symbol(glyphs[col], 24), delegate { UseHomeUtility(tag); });
-                button.Tag = tag; button.ToolTip = labels[col];
-                System.Windows.Automation.AutomationProperties.SetName(button, labels[col]);
-                button.HorizontalContentAlignment = HorizontalAlignment.Center;
-                button.Height = 52; button.Padding = new Thickness(5);
-                button.Margin = new Thickness(col == 0 ? 0 : 4, 0, col == tags.Length - 1 ? 0 : 4, 8);
-                Grid.SetColumn(button, col); utilities.Children.Add(button); controls.Add(button);
-            }
-            homeRows.Add(controls);
-            body.Children.Add(utilities);
+            SyncHomeActions();
             ((TextBlock)window.FindName("Feedback")).TextWrapping = TextWrapping.Wrap;
             ((TextBlock)window.FindName("Feedback")).TextTrimming = TextTrimming.None;
         }
@@ -109,13 +92,15 @@ namespace XGBP.Design
         }
 
         // Biblioteca e Downloads abrem a Steam; Teclado oculta a barra e abre o teclado virtual sobre o app de tras (ADR 0052);
-        // Lojas, Audio, Desempenho e Energia abrem paineis com volta para a Home.
+        // Lojas, Programas, Audio, Gravacao, Desempenho, AMD e Energia abrem paineis com volta para a Home.
         void UseHomeUtility(string tag)
         {
             if (tag == "utility-library") { OpenSteamLibrary(); return; }
             if (tag == "utility-downloads") { OpenSteamDownloads(); return; }
             if (tag == "utility-keyboard") { OpenKeyboardFromBar(); return; }
-            int target = tag == "utility-stores" ? StoresPanel : tag == "utility-audio" ? 6 : tag == "utility-performance" ? 3 : 4;
+            int target = tag == "utility-stores" ? StoresPanel : tag == "utility-programs" ? ProgramsPanel : tag == "utility-audio" ? 6 : tag == "utility-performance" ? 3 : 4;
+            if (tag == "utility-recording") target = AmdPanel;
+            else if (tag == "utility-amd") target = AmdTuningPanel;
             motionPanelAxis = "home"; motionPanelDirection = 1; SetPanel(target);
             homeReturnTag = tag; returnToHome = true;
             FocusFirstAction();
@@ -139,7 +124,7 @@ namespace XGBP.Design
                     int step = key == "DIREITA" ? 1 : -1, next = col + step;
                     while (next >= 0 && next < items.Count && !items[next].IsEnabled) next += step;
                     if (next >= 0 && next < items.Count) { homeColumn = next; items[next].Focus(); }
-                    else if (key == "ESQUERDA") rail[0].Focus();
+                    else if (key == "ESQUERDA") FocusNavigation(0);
                 }
                 else if (key == "CIMA" || key == "BAIXO")
                 {
@@ -151,6 +136,7 @@ namespace XGBP.Design
                         // O cartao de um jogo nao redefine a coluna lembrada; pausar e fechar redefinem.
                         if (items.Count > 1 && !(GameRow(items) && col == 0)) homeColumn = col;
                         var candidates = homeRows[target]; int wanted = Math.Min(homeColumn, candidates.Count - 1);
+                        wanted = HomeUtilityColumn(items, candidates, focused, wanted);
                         // Linha de jogo: vindo de outra secao, entra pelo cartao; entre jogos, mantem a coluna. Nunca cai direto em fechar.
                         if (GameRow(candidates)) wanted = GameRow(items) ? Math.Min(col, candidates.Count - 1) : 0;
                         Control best = null;
@@ -169,21 +155,22 @@ namespace XGBP.Design
         {
             returnToHome = false; SetPanel(0); window.UpdateLayout();
             int rowControls = 0; foreach (var r in homeRows) rowControls += r.Count;
-            if (homeRows.Count != 10 || openAppsRow.Count != openApps.Count || actions.Count != rowControls || actions.Count != 8 + openApps.Count + 9 + 6)
+            if (homeRows.Count != 12 || openAppsRow.Count != openApps.Count || actions.Count != rowControls || actions.Count != 10 + openApps.Count + 9 + 6 + 1) // Tres fileiras, dez atalhos (ADR 0099).
                 throw new Exception("Falha: conteudo da Home.");
             FocusHome("utility-downloads");
             if (utilitiesHint.Text != "Downloads" || ((TextBlock)window.FindName("Feedback")).Text != "") throw new Exception("Falha: nome do icone no titulo da secao.");
             FocusHome("steam-home"); if (utilitiesHint.Text != "") throw new Exception("Falha: limpar nome do icone.");
             FocusHome("utility-library"); Navigate("DIREITA");
-            if ((string)((Control)Keyboard.FocusedElement).Tag != "utility-stores") throw new Exception("Falha: navegar na linha de utilidades.");
+            if ((string)((Control)Keyboard.FocusedElement).Tag != "utility-programs") throw new Exception("Falha: navegar nos retangulos de utilidades.");
             foreach (var c in homeUtilities)
-                if (!(((Button)c).Content is TextBlock) || string.IsNullOrEmpty((string)c.ToolTip) || ((TextBlock)((Button)c).Content).FontFamily.Source != "Segoe MDL2 Assets") throw new Exception("Falha: utilidades devem conter apenas icones com nome acessivel.");
+                if (string.IsNullOrEmpty((string)c.ToolTip) || string.IsNullOrEmpty(System.Windows.Automation.AutomationProperties.GetName(c)))
+                    throw new Exception("Falha: utilidades devem manter nome acessivel.");
             FocusHome("utility-performance");
             Activate(); if (panel != 3) throw new Exception("Falha: atalho de desempenho.");
             Back(); if (panel != 0 || (string)((Control)Keyboard.FocusedElement).Tag != "utility-performance") throw new Exception("Falha: voltar a Home com foco restaurado.");
-            // Apps -> tres recentes -> tres linhas do player -> acesso rapido, sempre na coluna 2.
+            // Apps -> tres recentes -> tres linhas do player, sempre na coluna 2.
             openAppsRow[2].Focus(); for (int i = 0; i < 7; i++) Navigate("BAIXO");
-            if ((string)((Control)Keyboard.FocusedElement).Tag != "utility-downloads") throw new Exception("Falha: preservar coluna entre apps, player e acessos.");
+            if (!MediaControl(Keyboard.FocusedElement as Control)) throw new Exception("Falha: navegar dos apps ate o player ao fim da Home.");
             FocusHome("recent-fixture:one"); Activate();
             if (gameConfirmation != "fixture:one") throw new Exception("Falha: confirmar outro jogo aberto.");
             Back();
@@ -193,6 +180,7 @@ namespace XGBP.Design
             if (Keyboard.FocusedElement != actions[0]) throw new Exception("Falha: trilho para Home.");
             ChangePanel(-1); if (panel != 4) throw new Exception("Falha: ciclo da Home para Energia.");
             ChangePanel(1); if (panel != 0) throw new Exception("Falha: retorno ao inicio do ciclo.");
+            VerifyHomeUtilities();
         }
 #endif
     }

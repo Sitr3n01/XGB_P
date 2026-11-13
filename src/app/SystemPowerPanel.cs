@@ -26,13 +26,15 @@ namespace XGBP.Design
             Caption("DUALSENSE");
             SelectBattery(); batteryPanelText = Text(batteryText, 23, "TextPrimary"); body.Children.Add(batteryPanelText);
             Caption("ENERGIA");
+            EnsureWake(); // ADR 0102: a confirmacao de Suspender diz se o PS acorda o PC
             if (powerConfirmation.HasValue)
             {
                 var selected = powerConfirmation.Value;
                 body.Children.Add(Text(PowerLabel(selected) + " o computador?", 21, "TextPrimary"));
                 body.Children.Add(Text(selected == SystemPowerAction.Suspend ?
                     "O Windows colocará o computador em suspensão. Jogos pausados pelo XGB_P serão retomados antes de continuar." :
-                    "Salve seu trabalho antes de continuar. Jogos pausados pelo XGB_P serão retomados; o Windows poderá pedir para fechar aplicativos.", 15, "Muted"));
+            "Salve seu trabalho antes de continuar. Jogos pausados pelo XGB_P serão retomados; o Windows poderá p" +"edir para fechar aplicativos.", 15, "Muted"));
+                if (selected == SystemPowerAction.Suspend) { AddWakeSuspendNote(); AddTvSuspendNote(); }
                 Action("Cancelar", delegate { powerConfirmation = null; SetPanel(4); FocusFirstAction(); }).Tag = "system-power-cancel";
                 Action("Confirmar · " + PowerLabel(selected), ConfirmSystemPower).Tag = "system-power-confirm";
                 return;
@@ -43,6 +45,7 @@ namespace XGBP.Design
                 Action(PowerLabel(action), delegate { RequestSystemPower(selected); }).Tag = "system-power-" + action.ToString().ToLowerInvariant();
             }
             AddExitGamingMode();
+            AddTvPowerButtons();
         }
         void RequestSystemPower(SystemPowerAction action)
         {
@@ -64,6 +67,8 @@ namespace XGBP.Design
         }
         string PowerBlockedReason()
         {
+            if (tvBusy && tvConfig != null) return TvInterruptible() ? "Ligar TV ainda aguarda a tela. Se ela já acendeu, use \"A TV está ligada\"." :
+                "Aguarde a operação da TV terminar.";
             if (gameBusy != null) return "Aguarde a operação do jogo terminar.";
             if (steamInputPending || kbSteamHeld || kbSteamGate) return "Aguarde a Steam liberar o controle antes de continuar.";
             if (kbVisible || kbSuspended) return "Feche o teclado virtual antes de continuar.";
@@ -81,6 +86,7 @@ namespace XGBP.Design
             if (soundPreferencesDirty || appearanceDirty)
             { Feedback("Não foi possível salvar todas as preferências. Confira o armazenamento antes de continuar.", FeedbackKind.Warning); return; }
             var selected = powerConfirmation.Value;
+            bool byPad = controllerInvocation;
             powerConfirmation = null; systemPowerBusy = true;
             CancelSteamNavigation(); ClearHeld(); Hide(true);
             WriteLog("energia: confirmada pelo usuario | " + selected);
@@ -88,11 +94,13 @@ namespace XGBP.Design
             ConnectionWork(delegate {
                 if (prepare == null || execute == null) throw new InvalidOperationException("O serviço de energia não está disponível.");
                 prepare();
+                TvBeforePower(selected, byPad);
                 execute(selected);
             }, delegate(Exception error) {
                 systemPowerBusy = false;
                 if (error != null)
                 {
+                    if (!verify && selected == SystemPowerAction.Suspend) TvPowerFailed();
                     WriteLog("energia: falha ou entrega incerta; sem repeticao | " + error.Message);
                     // No desktop, Show so reabre pelo Win+G: o erro volta na mesma barra que pediu a energia.
                     SetPanel(4); desktopShowByWinG = true;
@@ -108,10 +116,11 @@ namespace XGBP.Design
         {
             gameOperations.Execute(delegate {
                 RecoverPausedRegistry();
-                if (pausedByPreview.Count != 0) throw new IOException("Não foi possível retomar todos os jogos pausados. Resolva a recuperação antes de continuar.");
+            if (pausedByPreview.Count != 0) throw new IOException("Não foi possível retomar todos os jogos pausados. Resolva a recuperação antes de continuar.");
                 return null;
             });
-            if (gameSessions != null && !gameSessions.FlushHistory()) throw new IOException("Não foi possível salvar o histórico de jogos. Confira o armazenamento antes de continuar.");
+            if (gameSessions != null && !gameSessions.FlushHistory()) throw new IOException(
+                "Não foi possível salvar o histórico de jogos. Confira o armazenamento antes de continuar.");
             if (!FlushLog()) throw new IOException("Não foi possível salvar o registro da operação.");
         }
     }

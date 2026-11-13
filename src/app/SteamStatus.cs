@@ -1,5 +1,5 @@
 // Sobre as telas do Big Picture, que ja mostram a hora no canto, a barra esconde o proprio relogio e leva rede e
-// bateria para o lado do titulo do painel (ADR 0093).
+// bateria para o lado do titulo do painel (ADR 0093). Visual aprovado pelo usuario em 04/11; ligado na 2.0.3 republicada.
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -53,5 +53,6 @@ namespace XGBP.Design
             double top = title.TranslatePoint(new Point(), anchor).Y + (title.ActualHeight - icons.DesiredSize.Height) / 2;
             Canvas.SetLeft(icons, SteamStatusGap); Canvas.SetTop(icons, Math.Round(top));
         }
+
     }
 }

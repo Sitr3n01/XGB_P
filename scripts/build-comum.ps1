@@ -5,7 +5,7 @@
 function Get-XgbSourceSnapshot {
     param([Parameter(Mandatory = $true)][string]$Repository)
     $items = @(Get-ChildItem -LiteralPath (Join-Path $Repository 'src') -Recurse -File |
-        Where-Object { $_.Extension -eq '.cs' -or $_.Extension -eq '.xaml' -or $_.Extension -eq '.manifest' })
+        Where-Object { $_.Extension -eq '.cs' -or $_.Extension -eq '.xaml' -or $_.Extension -eq '.svg' -or $_.Extension -eq '.manifest' })
     $items += @(Get-ChildItem -LiteralPath (Join-Path $Repository 'tests') -Filter '*.cs' -File)
     $items += @(Get-ChildItem -LiteralPath (Join-Path $Repository 'scripts') -Filter '*.ps1' -File)
     $items += @(Get-ChildItem -LiteralPath (Join-Path $Repository 'quality') -Filter '*.json' -File)
@@ -50,10 +50,11 @@ function Invoke-XgbCompile {
         $_.Path.EndsWith('.cs') -and ($_.Path.StartsWith('src/') -or ($Tests -and $_.Path.StartsWith('tests/')))
     } | ForEach-Object { Join-Path $Repository $_.Path })
     $options = @('/nologo', '/target:winexe', '/platform:x64', '/optimize+', '/codepage:65001', '/warn:4', '/warnaserror+',
-        "/out:$Executable", "/resource:$app\DesignPreview.xaml,DesignPreview.xaml", "/win32manifest:$app\DesignPreview.manifest")
+        "/out:$Executable", "/resource:$app\DesignPreview.xaml,DesignPreview.xaml",
+        "/resource:$app\DualSense.svg,DualSense.svg", "/win32manifest:$app\DesignPreview.manifest")
     if ($Tests) { $options += '/define:XGB_VERIFY' }
     foreach ($assembly in @('System.dll', 'System.Core.dll', 'System.Xaml.dll', 'System.Windows.Forms.dll',
-        'System.Drawing.dll', 'System.Management.dll', 'System.Runtime.Serialization.dll')) { $options += "/r:$assembly" }
+        'System.Drawing.dll', 'System.Management.dll', 'System.Runtime.Serialization.dll', 'System.Xml.dll')) { $options += "/r:$assembly" }
     foreach ($assembly in @('WindowsBase.dll', 'PresentationCore.dll', 'PresentationFramework.dll', 'UIAutomationClient.dll',
         'UIAutomationTypes.dll', 'UIAutomationProvider.dll')) { $options += ('/r:' + (Join-Path $compiler.Wpf $assembly)) }
     foreach ($assembly in @('System.Runtime.dll', 'System.Runtime.WindowsRuntime.dll',

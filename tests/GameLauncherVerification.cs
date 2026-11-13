@@ -22,14 +22,16 @@ namespace XGBP.Design
             string game = GameFiles.Normalize(Path.Combine(folder, "Game", "GenshinImpact.exe"));
             string key = "shortcut:42:3166698800";
             var entry = new GameEntry { Key = key, Name = "Genshin Impact", Kind = "Game", Available = true, RuntimePaths = new[] { launcher },
-                AdoptChildren = true };
-            Func<GameEntry[], GameCatalogState> catalogOf = delegate(GameEntry[] items) { var c = new GameCatalogState(); c.Entries.AddRange(items); return c;
+                AdoptChildren = true
                 };
+        Func<GameEntry[], GameCatalogState> catalogOf = delegate(GameEntry[] items) { var c = new GameCatalogState(); c.Entries.AddRange(items); return c; };
             var catalog = catalogOf(new[] { entry });
             Func<uint, uint, long, string, GameProcess> proc = (pid, parent, created, path) => new GameProcess { Pid = pid, ParentPid = parent,
-                Created = created, Path = path };
+                Created = created,
+                Path = path };
             Func<uint, long, string, DesktopWindow> win = (pid, hwnd, path) => new DesktopWindow { ProcessId = pid, Handle = new IntPtr(hwnd),
-                ExecutablePath = path, Title = Path.GetFileName(path) };
+                ExecutablePath = path,
+                Title = Path.GetFileName(path) };
             var none = new List<DesktopWindow>();
             DateTime t0 = DateTime.UtcNow.AddMinutes(-20);
 
@@ -46,17 +48,18 @@ namespace XGBP.Design
             focus.Update(catalog, both, new List<DesktopWindow> { gameWindow }, 11, t0.AddSeconds(4), w => true);
             view = focus.Update(catalog, both, new List<DesktopWindow> { gameWindow }, 11, t0.AddSeconds(6), w => true);
             check(view.Activity(key).LastFocused > 0 && focusStore.Last(key) > 0, "foco no jogo filho conta como foco do atalho");
-            view = tracker.Update(catalog, new List<GameProcess> { proc(11, 10, 150, game) }, new List<DesktopWindow> { gameWindow }, 11, t0.AddSeconds(8),
-                w => true);
+            view = tracker.Update(catalog, new List<GameProcess> { proc(11, 10, 150, game) }, new List<DesktopWindow> { gameWindow }, 11, t0.AddSeconds(8), w =>
+                true);
             check(view.Activity(key) != null && view.Activity(key).Window == gameWindow, "filho adotado continua do jogo depois que o lancador sai");
-            view = tracker.Update(catalog, new List<GameProcess> { proc(11, 99, 450, game) }, new List<DesktopWindow> { gameWindow }, 0, t0.AddSeconds(10),
-                w => true);
+            view = tracker.Update(catalog, new List<GameProcess> { proc(11, 99, 450, game) }, new List<DesktopWindow> { gameWindow }, 0, t0.AddSeconds(10), w =>
+                true);
             check(view.Activity(key) == null, "adocao antiga nao vale para outro processo com o mesmo PID");
             view = tracker.Update(catalog, new List<GameProcess>(), none, 0, t0.AddSeconds(30), w => true);
             check(view.Activity(key) == null, "jogo e lancador encerrados encerram a sessao");
 
-            view = sessions("pid").Update(catalog, new List<GameProcess> { proc(10, 2, 100, launcher), proc(11, 10, 50, game) }, new List<DesktopWindow> {
-                gameWindow }, 0, t0, w => true);
+            view = sessions("pid").Update(catalog, new List<GameProcess> { proc(10, 2, 100, launcher), proc(11, 10, 50, game) }, new
+                List<DesktopWindow> { gameWindow
+                }, 0, t0, w => true);
             check(view.Activity(key).Window == null && view.Activity(key).Pids.Count == 1, "filho mais antigo que o pai (PID reaproveitado) nao e adotado");
             view = sessions("sem-pai").Update(catalog, new List<GameProcess> { proc(10, 2, 100, launcher), proc(11, 0, 150, game) }, new List<DesktopWindow> {
                 gameWindow }, 0, t0, w => true);
@@ -73,15 +76,18 @@ namespace XGBP.Design
             view = sessions("mapeado").Update(catalogOf(new[] { mapped }), both, new List<DesktopWindow> { gameWindow }, 0, t0, w => true);
             check(view.Activity(key).Window == null && view.Activity(key).Pids.Count == 1, "sem adocao (mapeamento explicito), so o alvo conta");
             string crash = GameFiles.Normalize(Path.Combine(folder, "Game", "UnityCrashHandler64.exe"));
-            view = sessions("auxiliar").Update(catalog, new List<GameProcess> { proc(10, 2, 100, launcher), proc(12, 10, 160, crash) },
-                new List<DesktopWindow> { win(12, 1201, crash) }, 0, t0, w => true);
+            view = sessions("auxiliar").Update(catalog, new List<GameProcess> { proc(10, 2, 100, launcher), proc(12, 10, 160, crash) }, new
+                List<DesktopWindow> {
+                win(12, 1201, crash) }, 0, t0, w => true);
             check(view.Activity(key).Window == null && view.Activity(key).Pids.Count == 1, "auxiliar filho do lancador nao e adotado");
             string cmd = GameFiles.Normalize(Path.Combine(folder, "Tools", "runner.exe"));
-            var chain = new List<GameProcess> { proc(10, 2, 100, launcher), proc(20, 10, 110, cmd), proc(21, 20, 120, cmd), proc(22, 21, 130, game), proc(23,
-                22, 140, game) };
+            var chain = new List<GameProcess> { proc(10, 2, 100, launcher), proc(20, 10, 110, cmd), proc(21, 20, 120, cmd), proc(22, 21, 130,
+                game), proc(23, 22, 140,
+                game) };
             view = sessions("profundo").Update(catalog, chain, new List<DesktopWindow> { win(22, 2201, game) }, 0, t0, w => true);
             check(view.Activity(key).Window != null && view.Activity(key).Window.ProcessId == 22, "bisneto do alvo (profundidade " +
-                GameProcessIndex.MaxChildDepth + ") e adotado");
+                GameProcessIndex.MaxChildDepth +
+                ") e adotado");
             view = sessions("fundo").Update(catalog, chain, new List<DesktopWindow> { win(23, 2301, game) }, 0, t0, w => true);
             check(view.Activity(key).Window == null && !view.Activity(key).Pids.Contains(23), "descendente alem da profundidade maxima nao e adotado");
 
@@ -95,8 +101,7 @@ namespace XGBP.Design
             var shortcut = SteamCatalog.Read(steam, settings, null).Entries.Find(e => e.Key == "shortcut:42:3899276376");
             check(shortcut != null && shortcut.AdoptChildren && shortcut.Available, "atalho externo com alvo existente adota filhos");
             settings.Entries.Add(new GameMapping { Key = "shortcut:42:3899276376", Name = "Renomeado" });
-            check(SteamCatalog.Read(steam, settings, null).Entries.Find(e => e.Name == "Renomeado").AdoptChildren,
-                "mapeamento sem executavel preserva a adocao");
+        check(SteamCatalog.Read(steam, settings, null).Entries.Find(e => e.Name == "Renomeado").AdoptChildren, "mapeamento sem executavel preserva a adocao");
             settings.Entries[0].RuntimePaths = new[] { game };
             check(!SteamCatalog.Read(steam, settings, null).Entries.Find(e => e.Name == "Renomeado").AdoptChildren,
                 "mapeamento com executavel do jogo desliga a adocao");
@@ -105,9 +110,8 @@ namespace XGBP.Design
             check(!SteamCatalog.Read(steam, new GameSettings { SteamProfile = "42" }, null).Entries.Find(e => e.Key == "shortcut:42:3899276376").AdoptChildren,
                 "wrapper (wscript/cmd) continua sem adocao");
 
-            checks.Insert(0, "OK: " + checks.Count +
-                " verificacoes do lancador de atalho (ADR 0089). Processos, janelas e Steam sinteticos em bin; nenhum jogo real iniciado ou historico real " +
-                "alterado.");
+            checks.Insert(0, "OK: " + checks.Count + " verificacoes do lancador de atalho (ADR 0089). Processos, janelas e Steam sinteticos em bin; nenhum" +
+                " jogo real iniciado ou historico real alterado.");
             File.WriteAllLines(Path.Combine(Output, "jogos-lancador-verificacao.txt"), checks, Encoding.UTF8);
         }
     }

@@ -3,8 +3,9 @@ Copyright 2026 Sitr3n
 
 Licensed under the Apache License, Version 2.0. See LICENSE.
 
-This repository contains original source code only. It does not include,
-redistribute or relicense any third-party binary, sound, image or SDK. The
+The application source is licensed under Apache-2.0. The embedded DualSense
+SVG has its own license, described below. No third-party binary, sound or SDK
+is included. The
 software interoperates with separately installed products that remain subject
 to their own licenses and terms:
 
@@ -29,15 +30,29 @@ The DualSense HID report layout was checked against the SDL project's HIDAPI
 driver (zlib License, https://github.com/libsdl-org/SDL). No SDL code is
 included.
 
+Embedded artwork
+----------------
+src/app/DualSense.svg: PS5 outline icon from Controllercons 2.1.
+Copyright (c) 2023 Kieran McClung. SIL Open Font License 1.1.
+Source: https://github.com/controllercons/controllercons.github.io/blob/master/versions/2.1/svg/outline/ps5.svg
+The SVG geometry matches upstream. The WPF renderer adds a 0.35 DIP stroke.
+Full license: licenses/Controllercons-OFL-1.1.txt (also included in releases).
+The SVG remains under OFL-1.1; it is not relicensed under Apache-2.0.
+
+Logitech G HUB and Samsung Tizen integrations use separately installed
+software/devices. No credentials or device-specific configuration is included.
+
 Trademarks
 ----------
 Microsoft, Windows, Xbox and Xbox Game Bar are trademarks of the Microsoft
 group of companies. PlayStation and DualSense are trademarks of Sony
 Interactive Entertainment Inc. Steam and Steam Big Picture are trademarks of
 Valve Corporation. AMD, Radeon, Adrenalin, FidelityFX, FSR and ReLive are
-trademarks of Advanced Micro Devices, Inc. All other names are trademarks of
-their respective owners.
+trademarks of Advanced Micro Devices, Inc. Logitech, Logitech G, G HUB and
+LIGHTSPEED are trademarks of Logitech. Samsung and Tizen are trademarks of
+Samsung Electronics Co., Ltd. All other names are trademarks of their
+respective owners.
 
 XGB_P is an independent personal project. It is not affiliated with, endorsed
-by, or sponsored by Microsoft, Sony, Valve, AMD or any other company named
-above. Those names are used only to describe compatibility.
+by, or sponsored by Microsoft, Sony, Valve, AMD, Logitech, Samsung or any other
+company named above. Those names are used only to describe compatibility.

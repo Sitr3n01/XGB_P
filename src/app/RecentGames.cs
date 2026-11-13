@@ -146,8 +146,7 @@ namespace XGBP.Design
         void BuildGameResume()
         {
             gameControls.Clear(); gameRecentRows.Clear(); gameOpenRows.Clear(); gamesSignature = null;
-            var heading = HomeCaption("VOLTAR AO JOGO");
-            ((FrameworkElement)heading.Parent).Margin = new Thickness(0, 0, 0, 3);
+            HomeCaption("VOLTAR AO JOGO");
             gameResumeSlot = new StackPanel(); body.Children.Add(gameResumeSlot);
             gameResumeRow.Clear(); homeRows.Add(gameResumeRow);
         }
@@ -320,6 +319,7 @@ namespace XGBP.Design
             if (!force) foreach (var c in gameControls) if (!oldTags.Contains((string)c.Tag)) MotionReveal(c);
             if ((gameConfirmation != null || gameCloseConfirmation != null) && !oldTags.Contains("game-cancel")) MotionReveal(gameRecentsSlot, MotionNormal, 24);
             if (!force) { window.UpdateLayout(); ((ScrollViewer)window.FindName("BodyScroll")).ScrollToVerticalOffset(offset); }
+            SyncHomeActions();
             // Botao do jogo que acabou de fechar: o foco volta ao cartao do destaque, nao ao inicio da Home.
             if (hadFocus) FocusHome(actions.Exists(c => (string)c.Tag == tag) ? tag : "resume");
         }

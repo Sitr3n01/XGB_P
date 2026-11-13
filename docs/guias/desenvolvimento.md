@@ -20,6 +20,8 @@ Nenhum SDK, NuGet ou IDE é necessário.
 
 As verificações fazem parte da `partial class Preview` e acessam o estado privado dela. Código de verificação que precisa ficar num arquivo de `src/app` vai dentro de `#if XGB_VERIFY`. O produto nunca deve referenciar símbolos de teste: se a build de produto não compila, o símbolo está do lado errado.
 
+Nas verificações, a janela começa em 1920 × 1080 e aceita qualquer tamanho pedido pelo teste, mesmo maior que a tela (`tests/VerificationScene.cs`). Sem isso, o Windows limitaria a janela à tela de quem roda, e o layout mudaria de máquina para máquina. Testes de layout devem pedir o tamanho explicitamente (`window.Width`/`window.Height` ou `FitScene`), nunca depender da tela real.
+
 ## Comandos
 
 Compilar as duas builds em `bin\app`:
@@ -92,7 +94,7 @@ A aprovação de uma versão depende da matriz física ([roteiro](primeiros-test
 
 ## Release
 
-1. Atualize a versão em `quality/policy.json` (`releaseVersion`), `src/app/AssemblyInfo.cs`, `src/app/DesignPreview.manifest`, o texto de versão em `src/app/ConnectionsPanel.cs` e as verificações de `tests/ProductReleaseVerification.cs`.
+1. Atualize a versão em `quality/policy.json` (`releaseVersion`), `src/app/AssemblyInfo.cs`, `src/app/DesignPreview.manifest`, as verificações de `tests/ProductReleaseVerification.cs`.
 2. Mova as entradas de `Unreleased` do `CHANGELOG.md` para uma seção `## [x.y.z] — data`.
 3. Rode o gate local completo na máquina real e registre o resultado.
 4. Crie a tag: `vX.Y.Z-rc.N` para pre-release, `vX.Y.Z` depois da matriz física. O workflow `release.yml` confere a tag contra a política, roda o gate de CI, empacota, gera o `SHA256SUMS.txt` e o atestado de proveniência e publica a release com as notas do CHANGELOG.
@@ -101,3 +103,9 @@ A aprovação de uma versão depende da matriz física ([roteiro](primeiros-test
 
 - O `csc` do .NET Framework não tem `/deterministic`: duas compilações dos mesmos fontes geram hashes diferentes. Por isso o `build.json` registra a impressão digital dos fontes junto com o hash do executável, e a release publica o atestado de proveniência. A migração para Roslyn está no [roadmap](../roadmap.md).
 - O executável não tem assinatura Authenticode.
+
+## Novas verificações da 3.0.0
+
+`--verify-motion` inclui programas, composição, G HUB, microfone, TV com transporte substituído, retomada e os dois layouts. A CI também exercita `verificar-bootps-scripts.ps1` com registro e WMI substituídos. A bateria local acrescenta `--verify-programs-live`, `--verify-wake-live` e `--verify-tv-live`; o último lê a rede local e fica fora da CI. `-SemLeituras` mantém só suítes e processos próprios.
+
+O inventário cobre o SVG. O pacote inclui a licença OFL-1.1 do ícone e continua excluindo a build de testes, configurações, sons e a ponte local.
