@@ -15,6 +15,7 @@ namespace XGBP.Network
         public Guid Container;
         public List<string> Ids = new List<string>();
         public bool Connected, CanUnpair, Controller, AudioControl;   // AudioControl: ha filtro de audio BT para conectar/desconectar
+        public int Battery = -1;   // ultimo nivel informado ao Windows (ADR 0094); -1 sem leitura. Vale so com Connected.
     }
 
     public static class Bluetooth
@@ -46,8 +47,12 @@ namespace XGBP.Network
                     if (classic) Classify(thing, info.Id);
                 }
             }
+            Dictionary<Guid, BluetoothBatteryNode> levels = null;
+            try { levels = BluetoothBattery.ByContainer(BluetoothBattery.Nodes()); } catch (Exception) { }   // bateria e so detalhe da lista
             foreach (var thing in result)
             {
+                BluetoothBatteryNode level;
+                if (levels != null && thing.Container != Guid.Empty && levels.TryGetValue(thing.Container, out level)) thing.Battery = level.Percent;
                 string n = thing.Name.ToLowerInvariant();
                 thing.Controller |= n.Contains("dualsense") || n.Contains("wireless controller") || n.Contains("dualshock");
                 if (thing.Controller) thing.Kind = "Controle";

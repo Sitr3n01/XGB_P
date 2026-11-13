@@ -10,6 +10,10 @@
 | [Roadmap](roadmap.md) | Situação, pendências antes da aprovação e melhorias planejadas |
 | [Desenvolvimento](guias/desenvolvimento.md) | Ferramentas, as duas builds, gates e release |
 
+## Atualização dos fontes
+
+[Comparação e validação da candidata pública 3.0.0](atualizacao-publica-2026-11-08.md), [TV Samsung](guias/tv-samsung-integrada.md) e [despertar pelo PS](guias/despertar-pelo-ps.md).
+
 ## Decisões
 
 [Índice das ADRs](decisoes/README.md). Cada decisão importante tem um registro com contexto, decisão, consequências e evidências. Decisão substituída não é apagada: o registro novo aponta para o antigo.

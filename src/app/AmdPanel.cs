@@ -64,6 +64,11 @@ namespace XGBP.Design
                     st => st.InstantReplay ? "Ativado · " + AmdClock(TimeSpan.FromSeconds(st.ReplaySeconds)) : "Desativado");
                 AmdToggleRow(RadeonRelive.ToggleDesktop, "Gravar a área de trabalho", "ligada", "desligada", st => st.Desktop, null);
                 AmdToggleRow(RadeonRelive.ToggleMicrophone, "Microfone na gravação", "ligado", "desligado", st => st.Microphone, null);
+                if (AmdMicSilenced) // ADR 0107: o ReLive grava o microfone, mas o Windows esta no mudo
+                {
+                    var warn = Text("O microfone do Windows está mudo: a gravação sai sem a sua voz.", 14, "Critical");
+                    warn.Margin = new Thickness(2, 0, 0, 8); warn.Tag = "amd-mic-warning"; body.Children.Add(warn);
+                }
                 AmdToggleRow(RadeonRelive.ToggleCamera, "Câmera na gravação", "ligada", "desligada", st => st.Camera, null);
                 if (s != null && !ready) ConnectionNote("Ative Gravar e transmitir no AMD Software para usar a captura.");
             }
@@ -219,7 +224,7 @@ namespace XGBP.Design
             int r = amdRows.FindIndex(line => line.Contains(focused)); if (r < 0) return false;
             var row = amdRows[r]; int c = row.IndexOf(focused);
             if (focused is Slider && (key == "ESQUERDA" || key == "DIREITA")) return false;
-            if (key == "ESQUERDA") { if (c > 0) row[c - 1].Focus(); else rail[RailIndex(panel)].Focus(); return true; }
+            if (key == "ESQUERDA") { if (c > 0) row[c - 1].Focus(); else FocusNavigation(RailIndex(panel)); return true; }
             if (key == "DIREITA") { for (int n = c + 1; n < row.Count; n++) if (row[n].IsEnabled && row[n].Focus()) break; return true; }
             int step = key == "CIMA" ? -1 : key == "BAIXO" ? 1 : 0; if (step == 0) return false;
             for (int n = r + step; n >= 0 && n < amdRows.Count; n += step)

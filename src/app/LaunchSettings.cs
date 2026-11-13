@@ -18,6 +18,13 @@ namespace XGBP.Design
         [DataMember(IsRequired = true)] public int Version = 1;
         [DataMember(IsRequired = true)] public bool AlwaysAdmin;
         [DataMember(EmitDefaultValue = false)] public bool DesktopWinG;
+        // Comportamentos ligados por padrao; o arquivo guarda so a escolha de desligar (ADRs 0091 e 0092).
+        [DataMember(EmitDefaultValue = false)] public bool KeepTaskbar;
+        [DataMember(EmitDefaultValue = false)] public bool KeepAppVolume;
+        public LaunchPreferenceState Copy()
+        {
+            return new LaunchPreferenceState { AlwaysAdmin = AlwaysAdmin, DesktopWinG = DesktopWinG, KeepTaskbar = KeepTaskbar, KeepAppVolume = KeepAppVolume };
+        }
     }
     static class LaunchSettings
     {
@@ -112,7 +119,6 @@ namespace XGBP.Design
         }
         void AddLaunchSettings()
         {
-            Caption("INICIALIZAÇÃO E ABERTURA");
             bool? startupOn = startupReadError != null || startupState.Registered && (!startupState.Owned || !startupState.Enabled.HasValue)
                 ? (bool?)null : startupState.Registered && startupState.Enabled == true;
             string startupDetail = startupReadError != null ? "Indisponível" : startupState.Registered && (!startupState.Owned || startupState.Enabled != true) ? startupState.Describe() : null;
@@ -121,9 +127,15 @@ namespace XGBP.Design
             startup.IsEnabled = startupReadError == null && (!startupState.Registered || startupState.Owned);
             var admin = ToggleSetting(body, "Sempre executar como administrador", launchPreferences.AlwaysAdmin, "launch-admin", ToggleAlwaysAdmin);
             admin.ToolTip = "Vale na próxima abertura. O Windows pedirá confirmação do UAC; cancelar impede a abertura. Desligar vale na próxima execução.";
+            ConnectionButton(body, "Aplicativos de inicialização", "↗", "launch-windows", delegate { OpenWindowsPage("ms-settings:startupapps", "Aplicativos de inicialização"); });
+        }
+        // Secao ABRIR A BARRA (ADR 0112): a regra de abertura e a unica opcao que a muda.
+        void AddDesktopWinGSetting()
+        {
+            // Espacos inseparaveis: "Win + G" nao quebra no meio da linha.
+            ConnectionNote(GuideName + " ou Win\u00a0+\u00a0G abre a barra no modo Xbox. No desktop, só Win\u00a0+\u00a0G, com a opção abaixo ligada.");
             var desktop = ToggleSetting(body, "Permitir Win+G no desktop", launchPreferences.DesktopWinG, "launch-desktop-wing", ToggleDesktopWinG);
             desktop.ToolTip = "No desktop, somente Win+G abre e fecha a barra. " + (XboxIcons ? "O botão Xbox" : "O botão PS") + " continua restrito ao modo Xbox. Também disponível na bandeja.";
-            ConnectionButton(body, "Aplicativos de inicialização", "↗", "launch-windows", delegate { OpenWindowsPage("ms-settings:startupapps", "Aplicativos de inicialização"); });
         }
         void ToggleStartup()
         {
@@ -141,7 +153,7 @@ namespace XGBP.Design
         }
         void ToggleAlwaysAdmin()
         {
-            var next = new LaunchPreferenceState { AlwaysAdmin = !launchPreferences.AlwaysAdmin, DesktopWinG = launchPreferences.DesktopWinG };
+            var next = launchPreferences.Copy(); next.AlwaysAdmin = !launchPreferences.AlwaysAdmin;
             try
             {
                 launchWrite(next); launchPreferences = next; RebuildSettings("launch-admin");
@@ -151,7 +163,7 @@ namespace XGBP.Design
         }
         void ToggleDesktopWinG()
         {
-            var next = new LaunchPreferenceState { AlwaysAdmin = launchPreferences.AlwaysAdmin, DesktopWinG = !launchPreferences.DesktopWinG };
+            var next = launchPreferences.Copy(); next.DesktopWinG = !launchPreferences.DesktopWinG;
             try
             {
                 launchWrite(next); launchPreferences = next;

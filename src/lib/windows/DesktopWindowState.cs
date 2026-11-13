@@ -91,6 +91,13 @@ namespace XGBP.Desktop
                 path.StartsWith(root + Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar + "cef" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
         }
 
+        // A janela e o Big Picture da Steam instalada (titulo e proveniencia do processo), sem enumerar outras janelas.
+        public static bool IsSteamBigPicture(DesktopWindow item)
+        {
+            string root = null;
+            using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam")) if (key != null) root = key.GetValue("SteamPath") as string;
+            return IsSteamBigPicture(item, root);
+        }
         public static WindowObservation FindSteamBigPicture()
         { using (var query = new AppWindowQuery()) return FindSteamBigPicture(query); }
         internal static WindowObservation FindSteamBigPicture(AppWindowQuery query)

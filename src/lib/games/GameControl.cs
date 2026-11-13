@@ -37,17 +37,11 @@ namespace XGBP.Games
         public static List<uint> Tree(IEnumerable<uint> roots)
         {
             var parents = new Dictionary<uint, List<uint>>();
-            IntPtr snapshot = CreateToolhelp32Snapshot(2, 0);
-            if (snapshot != new IntPtr(-1)) try
+            foreach (var pair in Parents())
             {
-                var entry = new ProcessEntry { Size = (uint)Marshal.SizeOf(typeof(ProcessEntry)) };
-                for (bool ok = Process32First(snapshot, ref entry); ok; ok = Process32Next(snapshot, ref entry))
-                {
-                    List<uint> children; if (!parents.TryGetValue(entry.Parent, out children)) parents[entry.Parent] = children = new List<uint>();
-                    if (entry.Pid != entry.Parent) children.Add(entry.Pid);
-                }
+                List<uint> children; if (!parents.TryGetValue(pair.Value, out children)) parents[pair.Value] = children = new List<uint>();
+                if (pair.Key != pair.Value) children.Add(pair.Key);
             }
-            finally { CloseHandle(snapshot); }
             var result = new List<uint>(); var seen = new HashSet<uint>(); var pending = new Queue<uint>();
             foreach (var pid in roots) if (seen.Add(pid)) { result.Add(pid); pending.Enqueue(pid); }
             while (pending.Count > 0)
@@ -58,6 +52,22 @@ namespace XGBP.Games
                 foreach (var child in children)
                     if (born > 0 && Created(child) >= born && seen.Add(child)) { result.Add(child); pending.Enqueue(child); }
             }
+            return result;
+        }
+
+        // PID -> PID do pai no instante da leitura (Toolhelp). O pai pode ja ter saido e o PID ser reaproveitado:
+        // quem usa confere a criacao. Vazio se o snapshot falhar.
+        public static Dictionary<uint, uint> Parents()
+        {
+            var result = new Dictionary<uint, uint>();
+            IntPtr snapshot = CreateToolhelp32Snapshot(2, 0);
+            if (snapshot == new IntPtr(-1)) return result;
+            try
+            {
+                var entry = new ProcessEntry { Size = (uint)Marshal.SizeOf(typeof(ProcessEntry)) };
+                for (bool ok = Process32First(snapshot, ref entry); ok; ok = Process32Next(snapshot, ref entry)) result[entry.Pid] = entry.Parent;
+            }
+            finally { CloseHandle(snapshot); }
             return result;
         }
 

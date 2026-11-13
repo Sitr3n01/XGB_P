@@ -42,7 +42,7 @@ O DSX esconde o DualSense **físico** com o HidHide. O DualSense **virtual** do 
 Para ler o físico pelo Bluetooth, libere o executável. É uma mudança de configuração de segurança, então rode **como administrador**:
 
 ```powershell
-& "C:\Program Files\Nefarius Software Solutions\HidHide\x64\HidHideCLI.exe" --app-reg "%USERPROFILE%\Documents\Github\XGB_P\bin\DualSenseReader.exe"
+& "C:\Program Files\Nefarius Software Solutions\HidHide\x64\HidHideCLI.exe" --app-reg "$PWD\bin\DualSenseReader.exe"
 ```
 
 Para desfazer, troque `--app-reg` por `--app-unreg`. Para ver a configuração atual, que é só leitura: `--app-list`, `--dev-list`, `--cloak-state`.

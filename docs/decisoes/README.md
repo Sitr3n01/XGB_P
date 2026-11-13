@@ -93,6 +93,33 @@ Cada decisão importante fica num arquivo `NNNN-titulo.md`. Uma decisão aceita 
 | [0086](0086-versao-2.0.0-e-entrega-em-exe.md) | Versão 2.0.0 em `.exe` e `bin/app`, com backup das pastas 1.0.8; perfis por jogo da AMD suspensos | Publicada; teste físico pendente |
 | [0087](0087-teclado-automatico-so-com-modo-xbox-estavel.md) | Teclado automático só com o modo Xbox lido na hora e estável; campo herdado do desktop não abre | Publicada na 2.0.2; teste físico pendente |
 | [0088](0088-versao-2.0.2-e-entrega-em-exe-e-bin-app.md) | Versão 2.0.2 em `.exe` e `bin/app`, inicialização na 2.0.2, backup das pastas 2.0.0 | Publicada; teste físico pendente |
+| [0089](0089-jogo-filho-do-lancador-de-atalho.md) | Atalho externo sem mapeamento adota o jogo aberto como filho do alvo (unlocker); janela do filho só sem janela do alvo | Aceita; ainda não lançada |
+| [0090](0090-jogo-em-encerramento-nao-e-outro-jogo.md) | Processo do jogo em encerramento (sem caminho/criação) não conta como outro jogo: o retorno ao Início não é cancelado | Aceita; ainda não lançada |
+| [0091](0091-barra-de-tarefas-oculta-no-modo-xbox.md) | Ocultação automática da barra de tarefas ligada no modo Xbox e devolvida no desktop, com marcador de recuperação | Aceita; ainda não lançada |
+| [0092](0092-volume-do-app-em-foco-ao-abrir.md) | Som do app em foco pela metade enquanto a barra está aberta, com diário para restaurar depois de queda | Aceita; ainda não lançada |
+| [0093](0093-status-ao-lado-do-painel-nas-telas-steam.md) | Sobre o Big Picture, sem relógio e com rede/bateria ao lado do título do painel | Aceita; ainda não lançada |
+| [0094](0094-bateria-de-fones-bluetooth.md) | Bateria de fones Bluetooth (Hands-Free) lida da propriedade do Windows, na faixa de status e nas Conexões | Aceita; ainda não lançada |
+
+| [0095](0095-versao-2.0.3-e-entrega-em-exe-e-bin-app.md) | Versão e distribuição pública | Aceita; candidata pública 3.0.0 |
+| [0096](0096-pesquisa-de-programas-pelo-acesso-rapido.md) | Pesquisa de programas pelo Acesso rápido | Aceita; candidata pública 3.0.0 |
+| [0097](0097-acesso-rapido-no-topo-da-home.md) | Acesso rápido no topo da Home | Aceita; candidata pública 3.0.0 |
+| [0098](0098-gravacao-e-amd-no-acesso-rapido-compacto.md) | Gravação e AMD no Acesso rápido compacto | Aceita; candidata pública 3.0.0 |
+| [0099](0099-som-e-gravacao-em-retangulos-na-home.md) | Som e Gravação em retângulos na Home | Aceita; candidata pública 3.0.0 |
+| [0100](0100-mais-opcoes-globais-da-amd-no-painel.md) | Mais opções globais da AMD no painel | Aceita; candidata pública 3.0.0 |
+| [0101](0101-teclado-sobre-jogos-compor-e-enviar.md) | Teclado sobre jogos: compor e enviar | Aceita; candidata pública 3.0.0 |
+| [0102](0102-despertar-pelo-ps-integrado.md) | Despertar pelo PS integrado | Aceita; candidata pública 3.0.0 |
+| [0103](0103-previa-do-titulo-deslizante.md) | Título original com seta | Aceita; candidata pública 3.0.0 |
+| [0104](0104-versao-3.0.0-com-e-sem-trilho.md) | Versão 3.0.0 com e sem trilho | Aceita; candidata pública 3.0.0 |
+| [0105](0105-voltar-ao-jogo-acima-do-acesso-rapido.md) | Voltar ao jogo acima do Acesso rápido | Aceita; candidata pública 3.0.0 |
+| [0106](0106-bateria-de-fones-pelo-g-hub.md) | Bateria de fones pelo G HUB | Aceita; candidata pública 3.0.0 |
+| [0107](0107-microfone-mudo-sincronizado-com-o-dsx.md) | Microfone mudo sincronizado com o DSX | Aceita; candidata pública 3.0.0 |
+| [0108](0108-svg-do-usuario-no-indicador-do-dualsense.md) | SVG no indicador de bateria do DualSense | Aceita; candidata pública 3.0.0 |
+| [0109](0109-feedback-amd-so-para-avisos-relevantes.md) | Feedback AMD discreto nas operações rotineiras | Aceita; candidata pública 3.0.0 |
+| [0110](0110-integracao-da-tv-samsung.md) | Integração da TV Samsung | Aceita; candidata pública 3.0.0 |
+| [0111](0111-tv-integrada-comandos-automacao-e-retomada.md) | TV integrada: comandos, automação e retomada | Aceita; candidata pública 3.0.0 |
+| [0112](0112-trilho-lateral-como-opcao-e-ordem-das-configuracoes.md) | Trilho lateral como opção e ordem das Configurações | Aceita; candidata pública 3.0.0 |
+| [0113](0113-reforco-sutil-do-icone-dualsense.md) | Reforço sutil do ícone DualSense | Aceita; candidata pública 3.0.0 |
+| [0114](0114-bootps-reversivel-e-identificador-de-retomada.md) | BootPS reversível e identificador de retomada | Aceita; candidata pública 3.0.0 |
 
 ## Modelo
 

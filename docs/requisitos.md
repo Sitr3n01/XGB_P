@@ -1,4 +1,4 @@
-# Requisitos do XGB_P · V.2.1.0
+# Requisitos do XGB_P · V.3.0.0
 
 Barra de jogo para o modo Xbox do Windows 11, feita para o Steam Big Picture e o DualSense via DSX. Uso pessoal, uma configuração-alvo, sem promessa de compatibilidade universal.
 
@@ -27,9 +27,13 @@ A leitura HID é compartilhada e somente leitura: nenhum relatório de LED, vibr
 - **AMD:** ajustes gráficos globais pelo ADLX, relidos depois de cada mudança ([ADR 0082](decisoes/0082-painel-amd-ajustes-pelo-adlx.md)).
 - **Configurações:** Wi-Fi e Bluetooth, Luz noturna, DSX restaurado pela bandeja, bateria física do DualSense, ícones dos botões, inicialização com o Windows, administrador, sons, movimento reduzido, histórico de atividade e saída do modo Xbox.
 - **Energia:** suspender, reiniciar e desligar com segunda confirmação.
-- **Teclado virtual:** janela sem foco que digita no app da frente; abre sozinho só no modo Xbox estável, também pelo acesso rápido e pela bandeja ([ADR 0052](decisoes/0052-teclado-virtual.md), [ADR 0087](decisoes/0087-teclado-automatico-so-com-modo-xbox-estavel.md)).
+- **Teclado virtual:** sem foco em apps; ao abrir manualmente sobre jogo catalogado, compõe com foco e devolve ao enviar/cancelar; abre sozinho só no modo Xbox estável, também pelo acesso rápido e pela bandeja ([ADR 0052](decisoes/0052-teclado-virtual.md), [ADR 0087](decisoes/0087-teclado-automatico-so-com-modo-xbox-estavel.md)).
 
 Não há botão de preferência sem efeito nem ação simulada no fluxo normal. Dados de teste e efeitos substituídos existem só na build de verificação.
+
+## Novidades da 3.0.0
+
+Pesquisa de programas, Home reorganizada, trilho opcional, opções AMD ampliadas, composição sobre jogos, bateria G HUB, microfone mudo, TV Samsung optativa e diagnóstico de retomada: [comparação](atualizacao-publica-2026-11-08.md). A TV exige configuração local; automação começa desligada. Nenhum teste automatizado comprova despertar ou energia físicos.
 
 ## Dependências
 

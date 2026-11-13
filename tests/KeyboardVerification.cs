@@ -123,7 +123,9 @@ namespace XGBP.Design
                 tap("R1"); check(last() == "0x27", "R1 seta direita");
                 KbLocate("char-c"); input("R2", true); tap("X"); input("R2", false);
                 check(last() == "Ctrl+0x43" && !kbCtrlHeld, "R2 segurado vira Ctrl");
-                tap("MUTE"); check(last() == "Win+0x48", "microfone: ditado do Windows");
+                int beforeMute = strokes.Count; tap("MUTE");
+                check(strokes.Count == beforeMute, "microfone fica com o DSX: o MUTE nao abre o ditado (ADR 0107)");
+                KbLocate("dictation"); tap("X"); check(last() == "Win+0x48", "tecla de ditado da tela continua com Win+H");
                 tap("CREATE"); check(last() == "Win+0xBE", "Create: painel de emoji");
                 tap("L3"); input("RS_DIREITA", true); tick(400); input("RS_DIREITA", false);
                 check(last() == "Shift+0x27" && (kbOneShot & KeyModifiers.Shift) != 0, "analogico direito move o cursor e o Shift seleciona");
@@ -308,7 +310,7 @@ namespace XGBP.Design
                 report.AppendLine("OK: " + checks + " verificacoes do teclado virtual (ADR 0052).");
                 report.AppendLine("Camadas ABNT2/simbolos/Completo: quatro linhas de 13 unidades, cabecalho e faixa de atalhos com intervalos; navegacao pelas posicoes reais; plano do SendInput (Unicode, atalhos, prefixo estendido, surrogates).");
                 report.AppendLine("Engrenagem abre a secao do teclado nas Configuracoes; suspensao e retomada sobre o mesmo app. Renders de Caps, modificador, hover e areas de 1280/800 pixels.");
-                report.AppendLine("Acesso rapido oculta a barra e abre sobre o app de tras; mapeamento do DualSense (✕, □ repetido, △, Options, L1/R1, L2, L3/Caps, R2 Ctrl, R3, microfone, Create, touchpad, analogico direito); acentos ao segurar; atalhos da faixa; PS + botao fica com o DSX.");
+                report.AppendLine("Acesso rapido oculta a barra e abre sobre o app de tras; mapeamento do DualSense (✕, □ repetido, △, Options, L1/R1, L2, L3/Caps, R2 Ctrl, R3, MUTE sem ditado (fica com o DSX), Create, touchpad, analogico direito); acentos ao segurar; atalhos da faixa; PS + botao fica com o DSX.");
                 report.AppendLine("Texto fora do log; destino acompanha o app da frente; sem envio sem app na frente ou acima da integridade; barra suspende e retoma.");
                 report.AppendLine("Automatico so no modo Xbox, com campo editavel na frente, sem app excluido, sem a barra e respeitando o campo fechado; foco fora do campo fecha.");
                 report.AppendLine("Modo Xbox lido na hora (desktop antes da notificacao, API incerta e energia em andamento nao abrem); 3 s apos entrar no modo, o campo que ja tinha o foco no desktop fica fechado; retomada depois da barra confere o modo.");

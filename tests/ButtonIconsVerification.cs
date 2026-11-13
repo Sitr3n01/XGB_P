@@ -56,10 +56,10 @@ namespace XGBP.Design
                 string path = Path.Combine(Output, "appearance-icons-" + Guid.NewGuid().ToString("N"), "appearance.json");
                 appearanceWrite = state => GameFiles.Write(path, state);
                 buttonIcons = ButtonIconScheme.Auto; Show(); SetPanel(5);
-                check(ActionLabel("button-icons") == "Ícones dos botões · Automático (PlayStation)" && BodyHas("PS ou Win + G"), "entrada mostra o automatico resolvido");
+                check(ActionLabel("button-icons") == "Ícones dos botões · Automático (PlayStation)" && BodyStarts("PS ou Win\u00a0+\u00a0G abre a barra"), "entrada mostra o automatico resolvido");
                 FocusHome("button-icons"); Activate();
                 check(buttonIcons == ButtonIconScheme.PlayStation && ReadAppearancePreferences(path).ButtonIcons == 1 && FocusedTag() == "button-icons", "primeiro toque fixa PlayStation e salva");
-                Activate(); check(buttonIcons == ButtonIconScheme.Xbox && ActionLabel("button-icons") == "Ícones dos botões · Xbox" && BodyHas("Botão Xbox ou Win + G"), "segundo toque fixa Xbox e a Abertura acompanha");
+                Activate(); check(buttonIcons == ButtonIconScheme.Xbox && ActionLabel("button-icons") == "Ícones dos botões · Xbox" && BodyStarts("Botão Xbox ou Win\u00a0+\u00a0G abre a barra"), "segundo toque fixa Xbox e a Abertura acompanha");
                 window.UpdateLayout(); SaveRender("configuracoes-icones-xbox");
                 Activate(); check(buttonIcons == ButtonIconScheme.Auto && ReadAppearancePreferences(path).ButtonIcons == 0, "terceiro toque volta ao automatico");
                 buttonIcons = ButtonIconScheme.Xbox; RestoreAppearancePreferences(path); check(buttonIcons == ButtonIconScheme.Auto, "leitura restaura o esquema salvo");

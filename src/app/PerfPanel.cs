@@ -188,7 +188,7 @@ namespace XGBP.Design
             var text = (TextBlock)perfModeButton.Content;
             text.Text = label + (available ? perfExpanded ? "   ▴" : "   ▾" : "");
             perfModeButton.ToolTip = label; System.Windows.Automation.AutomationProperties.SetName(perfModeButton, "Modo de energia · " + label);
-            if (!available && perfModeButton.IsKeyboardFocused) rail[3].Focus();
+            if (!available && perfModeButton.IsKeyboardFocused) FocusNavigation(3);
             perfModeButton.IsEnabled = available; perfModeButton.Opacity = available ? 1 : .5;
         }
         static string PerfStatus(PerfSnapshot p)
@@ -266,7 +266,7 @@ namespace XGBP.Design
         void FocusPerfTag(string tag)
         {
             var target = actions.Find(c => (string)c.Tag == tag && c.IsEnabled);
-            if (target != null) target.Focus(); else rail[3].Focus();
+            if (target != null) target.Focus(); else FocusNavigation(3);
         }
         // Aplica o modo do Windows (o mesmo de Configuracoes > Energia) so por escolha do usuario.
         void ApplyPowerMode(Guid mode)

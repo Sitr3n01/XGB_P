@@ -195,7 +195,7 @@ namespace XGBP.Design
             int step = key == "DIREITA" ? 1 : -1, next = row.IndexOf(focused) + step;
             while (next >= 0 && next < row.Count && !row[next].IsEnabled) next += step;
             if (next >= 0 && next < row.Count) { audioColumn = next; row[next].Focus(); }
-            else if (key == "ESQUERDA") rail[panel].Focus();
+            else if (key == "ESQUERDA") FocusNavigation(panel);
             return true;
         }
 

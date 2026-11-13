@@ -4,6 +4,40 @@ All notable changes to XGB_P are documented here. The format follows [Keep a Cha
 
 ## [Unreleased]
 
+## [3.0.0] — Unreleased
+
+### Added
+
+- Program search from Home, with Start menu indexing, a controller keyboard, ranked results and launch options ([ADR 0096](docs/decisoes/0096-pesquisa-de-programas-pelo-acesso-rapido.md)).
+- Logitech LIGHTSPEED battery from read-only requests to the local G HUB agent, alongside Bluetooth batteries ([ADR 0106](docs/decisoes/0106-bateria-de-fones-pelo-g-hub.md)).
+- Live microphone mute status, updates in Sound/Recording and a warning when recording without voice ([ADR 0107](docs/decisoes/0107-microfone-mudo-sincronizado-com-o-dsx.md)).
+- Optional Samsung Tizen TV integration: local configuration import, DPAPI credentials, manual power commands, screen confirmation and opt-in suspend/resume, topology and HDR rules. Automation starts disabled; physical TV validation is pending (ADRs 0110–0111).
+- PS wake readiness, user-run reversible Bluetooth policy scripts, and a per-resume CycleId journal. A PS observed after resume is correlation, never proof of physical cause (ADRs 0102, 0114).
+
+### Changed
+
+- Home now orders open games before quick access: four icon-only rectangles and six squares, followed by centered open apps, recent games and media (ADRs 0097–0099, 0105).
+- One executable supports a lateral rail or the original panel title with a next arrow. Settings applies and saves the choice immediately (ADRs 0103–0104, 0112).
+- More global AMD settings, aligned controls, floating selectors, delayed slider submission and routine successes confined to history (ADRs 0100, 0109).
+- Manual keyboard over a catalogued game now focuses a local composition field, returns focus and sends text on Menu; Circle cancels ([ADR 0101](docs/decisoes/0101-teclado-sobre-jogos-compor-e-enviar.md)).
+- DualSense status uses the approved SVG and 0.35 DIP stroke. Controllercons artwork keeps its OFL-1.1 license, included in source and release archives (ADRs 0108, 0113).
+- Settings are grouped by Connections, Display, Controller, Keyboard, Interface, Activation, Xbox mode, Startup, System and About; the version comes from the assembly ([ADR 0112](docs/decisoes/0112-trilho-lateral-como-opcao-e-ordem-das-configuracoes.md)).
+- Public source targets 3.0.0 while keeping product/test builds separate, existing CI and ratchet limits. No GitHub release has been published by this update.
+- READMEs rewritten for 3.0.0, with a new social preview and screenshots rendered by the 3.0.0 test build from fixture data, replacing the 2.1.0 ones. The README now says no release exists yet and records the failing GitHub CI check instead of claiming a passing build ([image sources](docs/images/README.md)).
+
+### Also included since 2.1.0
+
+- **Hide the taskbar in the Xbox mode.** Taskbars that stay registered as an app bar while the Xbox mode hides them (for example Start11's) left desktop apps short of the full screen. On a confirmed Xbox mode the bar turns on the Windows taskbar auto-hide through the public app bar API and turns it off again on the desktop. It only undoes what it did: an auto-hide you already had stays, and turning it off yourself during the Xbox mode wins. A local marker undoes the change after a crash. Settings → MODO XBOX → *Ocultar a barra de tarefas*, on by default ([ADR 0091](docs/decisoes/0091-barra-de-tarefas-oculta-no-modo-xbox.md)).
+- **Lower the focused app while the bar is open.** Opening the bar halves the mixer volume of the game or app in front (all processes of a game, plus sessions of the same executable) with a short ramp, and closing it restores the level. A change made in the mixer while the bar is open is kept. Windows remembers per-app volume, so a journal restores an app that closed, or a bar that crashed, while the level was lowered. Settings → *Abaixar o som do app ao abrir*, on by default ([ADR 0092](docs/decisoes/0092-volume-do-app-em-foco-ao-abrir.md)).
+- **Bluetooth headset battery.** Headsets that report their level to Windows over Hands-Free show a headset icon and battery in the status strip and the level in Connections → Bluetooth devices. The value is read from the device property Windows keeps; nothing is sent to the headset. Only connected headsets are shown, because Windows keeps the last level after a disconnect ([ADR 0094](docs/decisoes/0094-bateria-de-fones-bluetooth.md)).
+- **Status strip over the Big Picture.** The Big Picture already shows its own clock in the same corner as the bar's status strip. When the bar opens with any Big Picture screen in front, it hides its own clock and moves network and battery next to the panel title. Over a game or a desktop app, the strip stays in the corner with the clock ([ADR 0093](docs/decisoes/0093-status-ao-lado-do-painel-nas-telas-steam.md)).
+
+### Fixed
+
+- **Fixture suites no longer depend on the screen.** Windows limits a window to the screen, so on a screen smaller than the 1920 × 1080 the suites ask for, the bar was laid out smaller and the GitHub CI failed with "player deve caber na Home sem rolagem". The test build now raises that limit through `WM_GETMINMAXINFO` and starts at 1920 × 1080; a new check confirms the window reaches 1920 × 1080 and 3840 × 2160. The Steam Input suite also depended on the Windows animation setting and now forces it on, like the other motion suites. `XGB_P.exe` is unchanged ([port report](docs/atualizacao-publica-2026-11-08.md#ci-no-github-tela-do-runner)).
+- **Back to Home after a slow exit.** A game that took a couple of seconds to quit stayed listed without a path or creation time while it was exiting. The return to the Big Picture Home took that copy for another open game and cancelled. The exiting copy of the same game no longer counts as another game, for the return, the exit confirmation, an exit from the game's own menu and *Fechar jogo e iniciar* ([ADR 0090](docs/decisoes/0090-jogo-em-encerramento-nao-e-outro-jogo.md)).
+- **Games started by a launcher.** An external Steam shortcut whose target starts the game as a child process (such as a frame rate unlocker) adopts the unclaimed children of the target, so the game's window, focus, pause and close work without a manual mapping ([ADR 0089](docs/decisoes/0089-jogo-filho-do-lancador-de-atalho.md)).
+
 ## [2.1.0] — 2026-11-04
 
 First public release. The application behaves exactly like 2.0.2; this version changes how it is built, verified and shipped.

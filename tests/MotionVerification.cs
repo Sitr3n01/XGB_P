@@ -124,11 +124,15 @@ namespace XGBP.Design
             motionSystemOverride = false; Hide(); Show(); PumpMotion(60); Hide();
             MotionAssert(motionClocks.Count == 0 && !motionTicker.IsEnabled, "animacao sobreviveu oculta");
             // Abrir do zero desloca os filhos diretos do corpo; acionar um deles pelo clique derrubava a previa (crash de 2026-10-24 09:32).
-            Show(); PumpMotion(350); lastSettingsUri = null;
-            var row = (Button)actions.Find(c => (string)c.Tag == "windows-settings");
+            // A linha conferida precisa estar na area visivel ao abrir: a pagina pode ter ficado rolada no fim (ADRs 0091/0092).
+            ((ScrollViewer)MotionPart("BodyScroll")).ScrollToVerticalOffset(0); window.UpdateLayout();
+            // Desde a ADR 0112 a primeira linha visivel e Dispositivos Bluetooth (Configuracoes do Windows foi para o fim da lista).
+            Show(); PumpMotion(350);
+            var row = (Button)actions.Find(c => (string)c.Tag == "page-bluetooth");
             MotionAssert(row.Parent == body && row.RenderTransform is TransformGroup && MotionScale(row) != null, "abertura do zero trocou a escala da linha das Configuracoes");
             row.Focus(); Activate();
-            MotionAssert(!window.IsVisible && lastSettingsUri == WindowsSettingsUri, "linha das Configuracoes depois de abrir do zero");
+            MotionAssert(window.IsVisible && settingsPage == "bluetooth", "linha das Configuracoes depois de abrir do zero");
+            Back(); PumpMotion(350); Hide();
             SetPanel(0); Show(); PumpMotion(350); FocusHome("steam-home");
             findBigPicture = delegate { return new XGBP.Desktop.WindowObservation { Window = openApps[0] }; };
             existingWindowAvailable = delegate { return true; };
@@ -145,6 +149,8 @@ namespace XGBP.Design
             motionReduced = true; SettleMotion(); SetPanel(0); Show(); window.UpdateLayout();
             foreach (int width in new[] { 1920, 3840 }) {
                 window.Width = width; window.Height = width * 9.0 / 16; window.UpdateLayout(); PumpMotion(60);
+                MotionAssert(Math.Abs(window.ActualWidth - width) < .5 && Math.Abs(window.ActualHeight - width * 9.0 / 16) < .5,
+                    "janela de verificacao limitada pela tela da maquina");
                 var fitted = MotionPart("Scene");
                 MotionAssert(sidebar.ActualWidth == 588 && Math.Abs(sceneScale - SceneScale(window.Width, window.Height)) < .001 &&
                     Math.Abs((SceneBox(sidebar).Top + SceneBox(sidebar).Bottom) / 2 - fitted.Height / 2) < .5 && SceneBox(sidebar).Top >= sceneEdge - .5 &&

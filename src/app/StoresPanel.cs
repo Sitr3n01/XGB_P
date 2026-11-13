@@ -20,8 +20,8 @@ namespace XGBP.Design
         Func<bool, List<GameStore>> storesRead = GameStores.Read;
         Action<GameStore> storeOpen = GameStores.Open;
 
-        // Lojas fica sob a Home: no trilho, o destaque e o foco ficam no Inicio.
-        static int RailIndex(int index) { return index == StoresPanel ? 0 : index; }
+        // Lojas e Programas (ADR 0096) ficam sob a Home: no trilho, o destaque e o foco ficam no Inicio.
+        static int RailIndex(int index) { return index == StoresPanel || index == ProgramsPanel ? 0 : index; }
 
         void StartStores()
         {
@@ -149,11 +149,10 @@ namespace XGBP.Design
                 storeOpen = delegate(GameStore s) { opened.Add(s.Key + "|" + s.Target); };
                 xboxMode = delegate { return xbox; };
                 returnToHome = false; SetPanel(0); Show(); window.UpdateLayout();
-                StoresAssert(homeUtilities.Count == 7 && (string)homeUtilities[1].Tag == "utility-stores" && (string)homeUtilities[1].ToolTip == "Lojas" &&
-                    ((TextBlock)((Button)homeUtilities[1]).Content).Text == "", "Lojas logo depois da Biblioteca no acesso rapido");
-                // As pontas nao tem margem externa; os atalhos do meio tem a mesma largura e o ultimo termina dentro do painel.
-                StoresAssert(homeUtilities.TrueForAll(c => c.ActualWidth > 40) && Math.Abs(homeUtilities[1].ActualWidth - homeUtilities[4].ActualWidth) < .5 &&
-                    homeUtilities[6].TranslatePoint(new Point(homeUtilities[6].ActualWidth, 0), body).X <= body.ActualWidth + .5, "sete atalhos com a mesma largura dentro do painel");
+                StoresAssert(homeUtilities.Count == 10 && (string)homeUtilities[4].Tag == "utility-stores" && (string)homeUtilities[4].ToolTip == "Lojas" &&
+                    ((TextBlock)((Button)homeUtilities[4]).Content).Text == "", "Lojas abre a fileira dos seis quadrados (ADR 0099)");
+                StoresAssert(homeUtilities.TrueForAll(c => c.ActualWidth > 40) && Math.Abs(homeUtilities[4].ActualWidth - homeUtilities[6].ActualWidth) < .5 &&
+                    homeUtilities[9].TranslatePoint(new Point(homeUtilities[9].ActualWidth, 0), body).X <= body.ActualWidth + .5, "quadrados uniformes e dez atalhos dentro do painel");
                 window.UpdateLayout(); SaveRender("home-acesso-lojas");
                 FocusHome("utility-stores"); StoresAssert(utilitiesHint.Text == "Lojas", "nome do atalho no titulo da secao");
                 Activate();
@@ -185,7 +184,7 @@ namespace XGBP.Design
                 storesRead = delegate { return new List<GameStore>(); }; stores = null; SetPanel(StoresPanel);
                 StoresAssert(StoreRows() == "" && BodyHas("LOJAS INSTALADAS · 0"), "lista vazia");
                 System.IO.File.WriteAllText(System.IO.Path.Combine(Output, "lojas-verificacao.txt"),
-                    "OK: Lojas no acesso rapido logo depois da Biblioteca (icone, nome no titulo da secao, seis atalhos dentro do painel, os do meio com a mesma largura); painel Lojas pela Home com Inicio destacado no trilho, " +
+                    "OK: Lojas no acesso rapido logo depois da Biblioteca (icone, nome no titulo da secao, oito atalhos dentro do painel, os do meio com a mesma largura); painel Lojas pela Home com Inicio destacado no trilho, " +
                     "lojas em ordem, icone e simbolo de reserva; abrir pelo shell esconde a barra, reabrir continua em Lojas, trilho sem sair do painel, Esc volta ao atalho; erro do shell avisa; " +
                     "Steam abre a loja do Big Picture no modo Xbox; R1 a partir de Lojas; leitura que falha mantem a lista, sem lista e lista vazia. Lojas substituidas; nada real aberto.\r\n", System.Text.Encoding.UTF8);
             }

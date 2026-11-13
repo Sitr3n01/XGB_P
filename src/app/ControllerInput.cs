@@ -60,6 +60,7 @@ namespace XGBP.Design
         void OnController(ButtonEvent e)
         {
             if (e == null || e.Button == null) return;
+            if (HandleResumeGuide(e)) return;
             if (e.Button == "PS" && !e.Down) { ReleaseGuide(e); return; }
             // PS + outro botao e atalho do DSX (PS como modificador): o toque nao abre a barra. Os analogicos nao contam.
             if (e.Button != "PS" && !e.Button.StartsWith("LS_", StringComparison.Ordinal) && !e.Button.StartsWith("RS_", StringComparison.Ordinal))
@@ -99,11 +100,12 @@ namespace XGBP.Design
             if (!e.Down) { if (e.Button == "X" && holdSource == "pad") ReleaseHold(); return; }
             if (was) return;
             WriteLog("entrada: " + e.Button);
-            if (e.Button == "X") { if (!BeginHold("pad")) Activate(); }
+            if (ProgramsButton(e.Button)) return; // teclado da pesquisa de programas (ADR 0096)
+            if (e.Button == "X") { if (!BeginHold("pad")) ActivateFromController(); }
             else if (e.Button == "CIRCULO") Back();
             else if (e.Button == "L1") ChangePanel(-1);
             else if (e.Button == "R1") ChangePanel(1);
-            else if (e.Button == "L2" || e.Button == "R2") PageController(e.Button == "L2" ? -1 : 1);
+            else if (e.Button == "L2" || e.Button == "R2") { if (!ProgramsPage(e.Button == "L2" ? -1 : 1)) PageController(e.Button == "L2" ? -1 : 1); }
             else if (e.Button == "TRIANGULO") ControllerPanel(0);
             else if (e.Button == "OPTIONS") ControllerPanel(5);
             else if (e.Button == "QUADRADO" || e.Button == "R3") ControllerRail();
@@ -111,7 +113,7 @@ namespace XGBP.Design
             else if (e.Button == "TOUCHPAD")
             {
                 if (flyout != null) Back();
-                else if (rail.Contains(Keyboard.FocusedElement as Button)) FocusFirstAction();
+                else if (NavigationHasFocus()) FocusFirstAction();
                 else ControllerRail();
             }
         }
@@ -221,7 +223,7 @@ namespace XGBP.Design
         }
         void ControllerRail()
         {
-            CancelHold(); ClearControllerMenus(); rail[RailIndex(panel)].Focus();
+            CancelHold(); ClearControllerMenus(); FocusNavigation(RailIndex(panel));
         }
         static bool InsideControllerScope(DependencyObject target, DependencyObject scope)
         {

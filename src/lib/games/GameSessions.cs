@@ -11,7 +11,7 @@ namespace XGBP.Games
 {
     public sealed class GameProcess
     {
-        public uint Pid;
+        public uint Pid, ParentPid;
         public long Created;
         public string Path, Name;
         string full;
@@ -21,10 +21,12 @@ namespace XGBP.Games
         {
             var result = new List<GameProcess>();
             var path = new System.Text.StringBuilder(512); // Caminhos usuais nao exigem um buffer de 64 KB por processo.
+            var parents = GameControl.Parents(); // Pai so serve com a criacao conferida (ADR 0089).
             foreach (var process in Process.GetProcesses()) using (process)
             {
                 uint pid = (uint)process.Id; if (pid == 0) continue;
                 var item = new GameProcess { Pid = pid };
+                uint parent; if (parents.TryGetValue(pid, out parent) && parent != pid) item.ParentPid = parent;
                 // Sem acesso de consulta (protecao de anti-cheat, por exemplo), o processo continua listado so pelo nome.
                 IntPtr h = OpenProcess(0x1000, false, pid);
                 if (h != IntPtr.Zero) try
@@ -157,6 +159,13 @@ namespace XGBP.Games
             public DateTime LastSeen, LastRead;
             public long LastFocused;
             public DesktopWindow Window;
+            // Descendentes adotados na ultima leitura (PID + criacao): continuam do jogo se o lancador sair antes.
+            public HashSet<string> Adopted;
+        }
+        static List<DesktopWindow> OwnedWindows(List<DesktopWindow> windows, List<GameProcess> processes)
+        {
+            return windows.FindAll(w => processes.Exists(p => p.Pid == w.ProcessId &&
+                (p.Path == null || w.ExecutablePath == null || GameFiles.Same(w.ExecutablePath, p.Path))));
         }
         readonly Dictionary<string, Session> sessions = new Dictionary<string, Session>();
         readonly GameHistory history;
@@ -183,25 +192,35 @@ namespace XGBP.Games
             {
                 var e = original.Copy(); e.Observed = history.Last(e.Key); view.Entries.Add(e);
                 if (e.Kind != "Game") continue;
-                var matches = processIndex.For(e.Key);
+                var direct = processIndex.For(e.Key);
                 Session s; sessions.TryGetValue(e.Key, out s);
+                // Lancador de atalho externo: o jogo pode ser filho do alvo e ficar fora da pasta dele (ADR 0089).
+                var adopted = e.AdoptChildren ? processIndex.Descendants(e.Key, s == null ? null : s.Adopted) : new List<GameProcess>();
+                var matches = adopted.Count == 0 ? direct : new List<GameProcess>(direct);
+                if (adopted.Count > 0) matches.AddRange(adopted);
                 if (matches.Count == 0)
                 {
                     if (s != null)
                     {
-                        s.FocusReads = s.RuntimeReads = 0; s.RuntimeInstance = null;
+                        s.FocusReads = s.RuntimeReads = 0; s.RuntimeInstance = null; s.Adopted = null;
                         if (now - s.LastSeen < TimeSpan.FromSeconds(10)) live.Add(e.Key);
                     }
                     continue;
                 }
                 // Janela: a do foreground, depois uma nao minimizada, depois qualquer uma dos processos do jogo.
-                var owned = windows.FindAll(w => matches.Exists(p => p.Pid == w.ProcessId && (p.Path == null || w.ExecutablePath == null || GameFiles.Same(w.ExecutablePath, p.Path))));
+                // A de um descendente adotado so vale quando os processos do proprio alvo nao tem janela.
+                var owned = OwnedWindows(windows, direct);
+                bool adoptedWindow = owned.Count == 0 && adopted.Count > 0;
+                if (adoptedWindow) owned = OwnedWindows(windows, adopted);
                 var window = owned.Find(w => w.ProcessId == foregroundPid && !w.Minimized) ?? owned.Find(w => !w.Minimized) ?? (owned.Count > 0 ? owned[0] : null);
                 // Janela fora da enumeracao (pausada, "nao respondendo" ou oculta por instantes) continua do jogo enquanto o handle existir.
                 if (window == null && s != null && s.Window != null && matches.Exists(p => p.Pid == s.Window.ProcessId) && stillValid(s.Window)) window = s.Window;
+                var windowProcess = window == null ? null : matches.Find(p => p.Pid == window.ProcessId);
                 // Identidade estavel: manter a instancia da sessao; senao a da janela, a do foreground ou a do runtime.
-                var process = (s == null ? null : matches.Find(p => p.Instance == s.Instance))
-                    ?? (window == null ? null : matches.Find(p => p.Pid == window.ProcessId))
+                // Com janela adotada, o processo principal e o dono dela (pausa observada e foco no jogo, nao no lancador).
+                var process = (adoptedWindow && window != null ? windowProcess : null)
+                    ?? (s == null ? null : matches.Find(p => p.Instance == s.Instance))
+                    ?? windowProcess
                     ?? matches.Find(p => p.Pid == foregroundPid)
                     ?? matches.Find(p => p.Path != null && Array.Exists(e.RuntimePaths, r => GameFiles.Same(r, p.Path)))
                     ?? matches[0];
@@ -224,6 +243,7 @@ namespace XGBP.Games
                     history.Observe(e.Key, now); e.Observed = history.Last(e.Key);
                 }
                 s.Instance = process.Instance; s.LastSeen = now; s.LastRead = now; s.Window = window; live.Add(e.Key);
+                s.Adopted = adopted.Count == 0 ? null : new HashSet<string>(adopted.ConvertAll(p => p.Instance), StringComparer.Ordinal);
                 long started = long.MaxValue; foreach (var p in matches) if (p.Created > 0 && p.Created < started) started = p.Created;
                 var activity = new GameActivity { Key = e.Key, Window = window, Confirmed = s.Confirmed, LastFocused = s.LastFocused,
                     Started = started == long.MaxValue ? 0 : started, Pid = process.Pid, Pids = matches.ConvertAll(p => p.Pid),

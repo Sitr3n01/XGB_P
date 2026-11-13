@@ -88,7 +88,6 @@ namespace XGBP.Design
         // Liga/desliga e volume sao salvos no perfil local; Reduzir movimento continua so na sessao.
         void AddSoundSetting()
         {
-            Caption("SONS");
             soundSetting = ToggleSetting(body, "Sons da interface", soundsOn, "ui-sounds", delegate { soundsOn = !soundsOn; if (!soundsOn) StopAllSounds(); UpdateSoundSetting(); QueueSoundPreferences(true); });
             var block = new StackPanel { Margin = new System.Windows.Thickness(0, 2, 0, 8) }; body.Children.Add(block);
             var label = new DockPanel { Margin = new System.Windows.Thickness(0, 0, 0, 3) }; block.Children.Add(label);
@@ -184,8 +183,8 @@ namespace XGBP.Design
                 SoundAssert(Keyboard.FocusedElement == mediaNext && SoundsSince(at) == "", "selecionar e andar no player ficam mudos");
                 mediaVolume.Focus(); double before = mediaVolume.Value; at = soundLog.Count; Navigate("DIREITA");
                 SoundAssert(mediaVolume.Value > before && SoundsSince(at) == "", "volume do player fica mudo");
-                at = soundLog.Count; Navigate("BAIXO");
-                SoundAssert(homeUtilities.Contains(Keyboard.FocusedElement as Control) && SoundsSince(at) == "mover", "sair do player toca");
+                mediaPlay.Focus(); at = soundLog.Count; Navigate("CIMA");
+                SoundAssert(!MediaControl(Keyboard.FocusedElement as Control) && SoundsSince(at) == "mover", "sair do player para os recentes toca");
                 SetPanel(6); window.UpdateLayout(); mediaPlay.Focus(); at = soundLog.Count; Activate(); Navigate("DIREITA");
                 SoundAssert(SoundsSince(at) == "", "player no Som tambem fica mudo");
                 audioPending.Clear();
@@ -254,8 +253,8 @@ namespace XGBP.Design
                 rail[index].RaiseEvent(new System.Windows.RoutedEventArgs(Button.ClickEvent));
                 SoundAssert(panel == index && SoundsSince(from) == "mover", "clique no painel do trilho " + index);
             }
-            string[] utilityTags = { "utility-stores", "utility-audio", "utility-performance", "utility-power" };
-            int[] utilityPanels = { StoresPanel, 6, 3, 4 };
+            string[] utilityTags = { "utility-stores", "utility-audio", "utility-recording", "utility-performance", "utility-amd", "utility-power" };
+            int[] utilityPanels = { StoresPanel, 6, AmdPanel, 3, AmdTuningPanel, 4 };
             for (int i = 0; i < utilityTags.Length; i++)
             {
                 returnToHome = false; SetPanel(0); window.UpdateLayout(); FocusHome(utilityTags[i]); int from = soundLog.Count;

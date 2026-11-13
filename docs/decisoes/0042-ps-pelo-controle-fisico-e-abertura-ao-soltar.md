@@ -25,7 +25,7 @@ Sem o PS, a Steam não volta ao Big Picture, e a troca natural dela já é imedi
 4. **Repique.** Um aperto que começa menos de 30 ms depois da soltura anterior é ignorado com a sua soltura. O log registra `entrada: PS repique ignorado`.
 5. **Ciclo da Steam sob demanda.** Aberturas por Win+G, bandeja ou PS só do físico não forçam layout nenhum, nem atrasam o fechamento.
 6. **Configuração pelo usuário** (regra 4 do `AGENTS.md`):
-   - HidHide: liberar `%USERPROFILE%\Documents\Github\XGB_P\bin\XgbDesignPreview.exe`, como já foi feito com o leitor. O DSX está configurado para controlar o HidHide (`SaveFile_LetDSXControlHidHide`). Se a liberação sumir, fazê-la pela página do HidHide no DSX.
+   - HidHide: liberar o `XGB_P.exe` no caminho fixo escolhido pelo usuário; ver [instalação e uso](../guias/instalacao-e-uso.md). O DSX está configurado para controlar o HidHide (`SaveFile_LetDSXControlHidHide`). Se a liberação sumir, fazê-la pela página do HidHide no DSX.
    - DSX (Mapping Lab do perfil em uso): silenciar o PS **sozinho** no controle virtual, com a mesma opção que os atalhos PS + botão já usam. Os atalhos continuam funcionando. Se quiser o menu da Steam, criar um atalho do DSX que gere o botão PS virtual.
 
 ## Consequências e limites

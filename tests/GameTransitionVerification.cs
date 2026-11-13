@@ -223,6 +223,29 @@ namespace XGBP.Design
                 exited.Add(a.Key); gamesView.Activities.Clear(); CheckGameClose(true, gameCommandVersion); finish();
                 check(front == steam.Handle && launches == 1 && gameTransition == null,
                     "Steam ja na frente recebe Inicio explicito depois de confirmar o ultimo fechamento");
+                // Encerramento lento (04/11 15:29): o jogo segue listado sem caminho/criacao com o Big Picture ja na frente (ADR 0090).
+                Func<GameActivity, GameActivity> exiting = delegate(GameActivity g) {
+                    var copy = new GameActivity { Key = g.Key, Pid = g.Pid }; copy.Pids.Add(g.Pid); copy.Processes.Add(new ProcessIdentity(g.Pid, 0));
+                        return copy;
+                };
+                gameHasExited = delegate(GameActivity g) { return g.Processes.Exists(p => !p.Known) ? (bool?)null : exited.Contains(g.Key); };
+                reset(); gamesView.Activities.Remove(b); closeActive(); gamesView.Activities.Remove(a); gamesView.Activities.Add(exiting(a));
+                front = steam.Handle; step(100); step(150);
+                check(gameExitRoute != null && launches == 0, "copia sem identidade do proprio jogo saindo nao conta como outro jogo aberto");
+                exited.Add(a.Key); CheckGameClose(true, gameCommandVersion); finish();
+                check(front == steam.Handle && launches == 1 && gameTransition == null && closingGame == null,
+                    "identidade original confirmada conclui com a copia ainda listada");
+                reset(); gamesView.Activities.Remove(b); closeActive(); gamesView.Activities.Remove(a);
+                var stranger = exiting(a); stranger.Pid = stranger.Pids[0] = 999; stranger.Processes[0] = new ProcessIdentity(999, 0);
+                gamesView.Activities.Add(stranger); front = steam.Handle; step(100);
+                check(gameExitRoute == null && launches == 0, "mesma chave com outro PID sem identidade continua tratada como outro jogo");
+                reset(); gamesView.Activities.Remove(b); Hide(); observedForegroundGame = a; front = steam.Handle;
+                var tearing = new GamesView(); tearing.Activities.Add(exiting(a));
+                ObserveGameExit(tearing, true, gameCommandVersion, 0); gamesView = tearing;
+                check(gameExitRoute == null && observedForegroundGame == a, "saida nativa lenta guarda a identidade original sem consumir a observacao");
+                exited.Add(a.Key); ObserveGameExit(tearing, true, gameCommandVersion, 0); finish();
+                check(front == steam.Handle && launches == 1 && gameTransition == null, "saida nativa lenta com a copia listada tambem retorna ao Inicio");
+                gameHasExited = delegate(GameActivity game) { return exited.Contains(game.Key); };
                 reset(); gamesView.Activities.Remove(b); closeActive(); front = otherApp; step(100);
                 exited.Add(a.Key); gamesView.Activities.Clear(); CheckGameClose(true, gameCommandVersion); finish();
                 check(front == otherApp && launches == 0 && gameTransition == null, "ultimo fechamento continua respeitando outro aplicativo escolhido");

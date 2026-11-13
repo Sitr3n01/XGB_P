@@ -14,7 +14,6 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using XGBP.Desktop;
-
 namespace XGBP.Design
 {
     sealed partial class Preview
@@ -53,7 +52,6 @@ namespace XGBP.Design
         FeedbackNotice appCloseFeedback, appSwitchFeedback;
         long appCommandVersion, appCloseVersion;
         DateTime appCloseDeadline;
-
         void StartOpenApps()
         {
             holdTimer.Tick += delegate { HoldElapsed(); };
@@ -266,6 +264,8 @@ namespace XGBP.Design
                     openAppsRow[i].Margin = new Thickness(0, 0, i == openAppsRow.Count - 1 ? 0 : 8, 0);
                     if (!motionBuilding && !oldTags.Contains((string)openAppsRow[i].Tag)) MotionReveal((FrameworkElement)openAppsRow[i]);
                 }
+                // Icones centralizados na secao enquanto cabem; com mais apps, a faixa rola desde a esquerda. O aviso vazio fica a esquerda.
+                openAppsButtons.HorizontalAlignment = openAppsRow.Count > 0 ? HorizontalAlignment.Center : HorizontalAlignment.Left;
                 // Os indices podem mudar quando uma janela fecha; os retornos usam tags estaveis.
                 actions.Clear(); foreach (var row in homeRows) actions.AddRange(row);
                 window.UpdateLayout();

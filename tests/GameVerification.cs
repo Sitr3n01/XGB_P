@@ -305,8 +305,8 @@ namespace XGBP.Design
                 GameAssert(Math.Abs(gameResumeRow[1].ActualHeight - gameResumeRow[0].ActualHeight) < .5 && Math.Abs(gameResumeRow[1].ActualWidth - 52) < .5 &&
                     Math.Abs(gameResumeRow[2].TranslatePoint(new Point(52, 0), body).X - gameOpenRows[0][2].TranslatePoint(new Point(52, 0), body).X) < .5, "botoes com a altura do cartao e alinhados a direita");
                 SaveRender("home-jogos-abertos");
-                openAppsRow[2].Focus(); Navigate("CIMA");
-                GameAssert(Keyboard.FocusedElement == gameOpenRows[0][0], "subir dos apps entra pelo cartao do outro jogo aberto, nao pelo fechar");
+                FocusHome("utility-programs"); Navigate("CIMA"); // Programas fica abaixo do fechar, do lado direito.
+                GameAssert(Keyboard.FocusedElement == gameOpenRows[0][0], "subir do Acesso rapido entra pelo cartao do outro jogo aberto, nao pelo fechar");
                 Navigate("DIREITA"); GameAssert(Keyboard.FocusedElement == gameOpenRows[0][1] && Outline(gameOpenRows[0][1]) == Brush("FocusGreen").Color, "direita vai para pausar, com contorno verde");
                 Navigate("DIREITA"); GameAssert(Keyboard.FocusedElement == gameOpenRows[0][2] && Outline(gameOpenRows[0][2]) == Brush("CloseRed").Color, "direita vai para fechar, com contorno vermelho");
                 GameAssert(gameResumeRow[2].Style == window.FindResource("CloseAction") && gameResumeRow[1].Style != window.FindResource("CloseAction"), "fechar do destaque no estilo vermelho; pausar continua verde");

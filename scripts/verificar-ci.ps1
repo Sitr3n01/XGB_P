@@ -14,6 +14,10 @@ Invoke-XgbStaticChecks -Repository $repo -Policy $policy -Snapshot $snapshot | F
 & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $repo 'scripts\verificar-infraestrutura.ps1') -PastaSaida $PastaSaida | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Contrato de infraestrutura falhou.' }
 'OK: contrato dos recibos de verificacao.'
+& powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $repo 'scripts\verificar-bootps-scripts.ps1') `
+    -PastaSaida (Join-Path $output 'bootps') | Out-Null
+if ($LASTEXITCODE -ne 0) { throw 'Regressao isolada BootPS falhou.' }
+'OK: 11 verificacoes BootPS com registro e WMI substituidos.'
 & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $repo 'scripts\compilar-xgb.ps1') -PastaSaida $PastaSaida
 if ($LASTEXITCODE -ne 0) { throw 'Compilacao falhou.' }
 $tests = Join-Path $output 'XGB_P.Tests.exe'

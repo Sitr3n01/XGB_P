@@ -99,6 +99,7 @@ namespace XGBP.Design
             foreach (var r in new[] { wifiRadio, btRadio }) text.Append("|" + (r == null ? "?" : r.Describe()));
             if (wifiState != null) { text.Append("|" + wifiState.Adapter + wifiState.Note); foreach (var n in wifiState.Networks) text.Append("|" + n.Profile + n.Connected + n.InRange + n.Bars); }
             if (btDevices != null) foreach (var d in btDevices) text.Append("|" + d.Key + d.Name + d.Connected + d.AudioControl);
+            text.Append("|g" + GHubHeadsetSignature());
             return text.ToString();
         }
         // So as redes salvas em alcance aparecem; as demais ficam no Wi-Fi do Windows. Com o radio desligado, nenhuma.
@@ -123,45 +124,59 @@ namespace XGBP.Design
             RebuildSettings(focused != null && actions.Contains(focused) ? focused.Tag as string : null);
         }
 
-        // Pagina principal: Conexoes primeiro, depois o conteudo de sempre das Configuracoes.
+        // Pagina principal (ADR 0112): o que se usa do sofa no topo, os ajustes ocasionais no meio e, no fim, o que se configura
+        // uma vez, o diagnostico e as saidas. A lista da a volta, entao o fim tambem fica a poucos toques do topo.
         void BuildSettings()
         {
             connectionsSignature = SettingsSignature();
             if (settingsPage == "wifi") { BuildWifiPage(); return; }
-            if (settingsPage == "bluetooth") { BuildBluetoothPage(); return; }
+            if (settingsPage == "bluetooth") { BuildBluetoothPage(); return; } if (settingsPage == "tv") { BuildTvPage(); return; } // ADR 0110
             if (settingsPage == "history") { BuildHistoryPage(); return; }
             ((TextBlock)window.FindName("PanelTitle")).Text = "Configurações";
             Caption("CONEXÕES");
-            RadioRow("wifi", "Wi-Fi", wifiRadio);
+            // Paginas antes dos radios: o controle e o fone usam Bluetooth, e um X ao entrar abre uma pagina em vez de desligar um radio.
+            int connected = btDevices == null ? 0 : btDevices.FindAll(d => d.Connected).Count;
+            string devices = btDevices == null ? "Lendo…" : btDevices.Count + (btDevices.Count == 1 ? " conhecido" : " conhecidos") + (connected > 0 ? " · " + connected + " conectado" + (connected == 1 ? "" : "s") : "");
+            ConnectionButton(body, "Dispositivos Bluetooth", devices + "  ›", "page-bluetooth", delegate { OpenSettingsPage("bluetooth"); });
+            AddGHubHeadsetRows(); // ADR 0106
             int inRange = WifiVisible().Count;
             string networks = wifiState == null ? "Lendo…" : !wifiState.Adapter ? "Sem adaptador" : wifiState.Note != null ? "Alcance indisponível" :
                 inRange > 0 ? inRange + " em alcance" : "Nenhuma em alcance";
             ConnectionButton(body, "Redes Wi-Fi", networks + "  ›", "page-wifi", delegate { OpenSettingsPage("wifi"); });
             RadioRow("bluetooth", "Bluetooth", btRadio);
-            int connected = btDevices == null ? 0 : btDevices.FindAll(d => d.Connected).Count;
-            string devices = btDevices == null ? "Lendo…" : btDevices.Count + (btDevices.Count == 1 ? " conhecido" : " conhecidos") + (connected > 0 ? " · " + connected + " conectado" + (connected == 1 ? "" : "s") : "");
-            ConnectionButton(body, "Dispositivos Bluetooth", devices + "  ›", "page-bluetooth", delegate { OpenSettingsPage("bluetooth"); });
+            RadioRow("wifi", "Wi-Fi", wifiRadio);
             Caption("TELA");
-            NightLightRow();
+            AddTvSetting(); NightLightRow(); // ADR 0110
             Caption("CONTROLE");
             var dsx = Action("DSX · ajustes do controle", OpenDsx); dsx.Tag = "dsx"; dsx.ToolTip = "Abre o DSX para ajustar o DualSense";
-            AddButtonIconsSetting();
+            AddButtonIconsSetting(); AddWakeSetting(); // ADR 0102
+            Caption("TECLADO VIRTUAL");
             AddKeyboardSettings();
-            Caption("SISTEMA E STEAM");
+            Caption("INTERFACE");
+            AddRailSetting(); AddSoundSetting(); AddMotionSetting();
+            Caption("ABRIR A BARRA");
+            AddDesktopWinGSetting(); AddAppVolumeSetting();
+            Caption("MODO XBOX");
+            AddTaskbarSetting(); AddExitGamingMode();
+            Caption("INICIALIZAÇÃO");
+            AddLaunchSettings();
+            Caption("SISTEMA");
+            AddHistorySetting();
             Action("Configurações do Windows", OpenWindowsSettings).Tag = "windows-settings";
             Action("Configurações da Steam", OpenSteamSettings).Tag = "steam-settings";
-            AddHistorySetting();
-            Caption("MODO XBOX");
-            AddExitGamingMode();
-            Caption("ABERTURA");
-            body.Children.Add(Text(GuideName + " ou Win + G", 27, "AccentText"));
-            body.Children.Add(Text("No modo Xbox, " + GuideName + " ou Win+G. No desktop, somente Win+G com a opção abaixo ligada.", 15, "Muted"));
-            AddLaunchSettings();
-            AddSoundSetting();
-            AddMotionSetting();
             Caption("SOBRE");
-            body.Children.Add(Text("XGB_P · V.2.1.0", 19, "Muted"));
-            Action("Encerrar XGB_P", delegate { app.Shutdown(); });
+            body.Children.Add(Text("XGB_P · V." + ProductVersionText, 19, "Muted"));
+            Action("Encerrar XGB_P", delegate { app.Shutdown(); }).Tag = "shutdown";
+        }
+        // A mesma versao do executavel (AssemblyInfo.cs), sem uma oitava copia do numero no codigo.
+        static string ProductVersionText
+        {
+            get
+            {
+                var info = Attribute.GetCustomAttribute(typeof(Preview).Assembly, typeof(System.Reflection.AssemblyInformationalVersionAttribute))
+                    as System.Reflection.AssemblyInformationalVersionAttribute;
+                return info != null ? info.InformationalVersion : typeof(Preview).Assembly.GetName().Version.ToString(3);
+            }
         }
         void RadioRow(string kind, string label, RadioInfo info)
         {
@@ -289,7 +304,7 @@ namespace XGBP.Design
             else foreach (var entry in btDevices)
             {
                 var d = entry; string tag = "bt-" + d.Key;
-                var row = ConnectionButton(body, d.Name, (d.Connected ? "Conectado" : "Desconectado") + " · " + d.Kind, tag, delegate { ToggleMenu(tag); });
+                var row = ConnectionButton(body, d.Name, BluetoothDetail(d), tag, delegate { ToggleMenu(tag); });
                 if (d.Connected) ((TextBlock)((Grid)row.Content).Children[1]).Foreground = Brush("AccentText");
                 if (connectionMenu == tag) DeviceMenu(d, on);
             }

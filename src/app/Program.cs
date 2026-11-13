@@ -28,14 +28,20 @@ namespace XGBP.Design
             bool liveActivation = Array.IndexOf(args, "--verify-activation-live") >= 0;
             bool liveKeyboard = Array.IndexOf(args, "--verify-keyboard-live") >= 0;
             bool liveAccent = Array.IndexOf(args, "--verify-accent-live") >= 0;
+            bool livePrograms = Array.IndexOf(args, "--verify-programs-live") >= 0;
+            bool liveWake = Array.IndexOf(args, "--verify-wake-live") >= 0;
+            bool liveTv = Array.IndexOf(args, "--verify-tv-live") >= 0;
+            bool coreTv = Array.IndexOf(args, "--verify-tv-core") >= 0;
+            bool integrationTv = Array.IndexOf(args, "--verify-tv-integration") >= 0;
             bool releaseCheck = Array.IndexOf(args, "--verify-release") >= 0;
             bool observerCheck = Array.IndexOf(args, "--verify-observer-live") >= 0;
             bool performanceCheck = Array.IndexOf(args, "--verify-performance") >= 0;
             // Fora da bateria: despacha os protocolos reais do Steam Input (ADR 0041).
             bool liveSteamInput = Array.IndexOf(args, "--verify-steam-input-live") >= 0;
             bool checkMotion = Array.IndexOf(args, "--verify-motion") >= 0;
+            bool titleCheck = Array.IndexOf(args, "--verify-sliding-title") >= 0;
             bool inspectMotion = Array.IndexOf(args, "--inspect-motion") >= 0;
-            bool verify = performanceCheck || observerCheck || releaseCheck || inspectMotion || checkMotion || Array.IndexOf(args, "--verify") >= 0 || liveAudio || liveApps || liveMedia || livePerf || liveStatus || liveGames || liveControl || liveClose || liveConnections || liveStores || liveSounds || liveLaunch || liveActivation || liveSteamInput || liveKeyboard || liveAccent;
+            bool verify = titleCheck || coreTv || integrationTv || livePrograms || liveWake || liveTv || performanceCheck || observerCheck || releaseCheck || inspectMotion || checkMotion || Array.IndexOf(args, "--verify") >= 0 || liveAudio || liveApps || liveMedia || livePerf || liveStatus || liveGames || liveControl || liveClose || liveConnections || liveStores || liveSounds || liveLaunch || liveActivation || liveSteamInput || liveKeyboard || liveAccent;
             if (!verify && Array.Exists(args, a => a.StartsWith("--verify", StringComparison.Ordinal))) return 2;
 #else
             // Build de produto: os modos de verificacao existem somente em XGB_P.Tests.exe.
@@ -80,10 +86,16 @@ namespace XGBP.Design
                     if (verify && !inspectMotion)
                     {
                         if (performanceCheck) preview.VerifyPerformance();
+                        else if (titleCheck) preview.VerifySlidingTitle();
                         else if (observerCheck) preview.VerifyObserverLive();
                         else if (releaseCheck) preview.VerifyReleaseReadiness();
                         else if (liveAccent) preview.VerifyAccentLive();
-                        else if (checkMotion) { preview.Verify(); preview.VerifyMotion(); }
+                        else if (livePrograms) preview.VerifyProgramsLive();
+                        else if (liveWake) preview.VerifyWakeLive();
+                        else if (liveTv) preview.VerifyTvLive();
+                        else if (coreTv) preview.VerifyTvCore();
+                        else if (integrationTv) preview.VerifyTvIntegration();
+                        else if (checkMotion) { preview.Verify(); preview.VerifyMotion(); preview.VerifySlidingTitle(); }
                         else if (liveAudio) preview.VerifyAudioLive(); else if (liveApps) preview.VerifyOpenAppsLive(); else if (liveMedia) preview.VerifyMediaLive();
                         else if (livePerf) preview.VerifyPerfLive(); else if (liveStatus) preview.VerifyStatusLive(); else if (liveGames) preview.VerifyGamesLive(); else if (liveControl) preview.VerifyGameControlLive(); else if (liveClose) preview.VerifyAppCloseLive(); else if (liveConnections) preview.VerifyConnectionsLive(); else if (liveStores) preview.VerifyStoresLive(); else if (liveSounds) preview.VerifySoundsLive(); else if (liveLaunch) preview.VerifyLaunchLive(); else if (liveActivation) preview.VerifyActivationLive(); else if (liveSteamInput) preview.VerifySteamInputLive(); else if (liveKeyboard) preview.VerifyKeyboardLive(); else preview.Verify();
                         verificationSucceeded = true;
