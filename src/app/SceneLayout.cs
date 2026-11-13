@@ -32,6 +32,10 @@ namespace XGBP.Design
                 displayChanged = delegate { Dispatch(PlaceWindow); };
                 SystemEvents.DisplaySettingsChanged += displayChanged;
             }
+#if XGB_VERIFY
+            // Verificacoes em 1920 x 1080 em qualquer tela (tests/VerificationScene.cs).
+            if (verify) window.SourceInitialized += delegate { FixVerificationScene(); };
+#endif
             PlaceWindow();
         }
         void StopScene() { if (displayChanged != null) { SystemEvents.DisplaySettingsChanged -= displayChanged; displayChanged = null; } }

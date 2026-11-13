@@ -147,6 +147,8 @@ namespace XGBP.Design
             motionReduced = true; SettleMotion(); SetPanel(0); Show(); window.UpdateLayout();
             foreach (int width in new[] { 1920, 3840 }) {
                 window.Width = width; window.Height = width * 9.0 / 16; window.UpdateLayout(); PumpMotion(60);
+                MotionAssert(Math.Abs(window.ActualWidth - width) < .5 && Math.Abs(window.ActualHeight - width * 9.0 / 16) < .5,
+                    "janela de verificacao limitada pela tela da maquina");
                 var fitted = MotionPart("Scene");
                 MotionAssert(sidebar.ActualWidth == 588 && Math.Abs(sceneScale - SceneScale(window.Width, window.Height)) < .001 &&
                     Math.Abs((SceneBox(sidebar).Top + SceneBox(sidebar).Bottom) / 2 - fitted.Height / 2) < .5 && SceneBox(sidebar).Top >= sceneEdge - .5 &&
