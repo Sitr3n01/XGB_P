@@ -4,6 +4,10 @@ All notable changes to XGB_P are documented here. The format follows [Keep a Cha
 
 ## [Unreleased]
 
+### Changed
+
+- The READMEs and the roadmap now report the GitHub CI as passing on `main` since the 3.0.0 merge on November 13, 2026, replacing the note about the 2.1.0 failure, and the roadmap no longer says the port is unpublished.
+
 ## [3.0.0] — Unreleased
 
 ### Added
