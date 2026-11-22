@@ -147,12 +147,11 @@ The executable is not Authenticode-signed, so SmartScreen may warn on first laun
 
 ## Project status
 
-**v3.0.0 source candidate — physical validation pending.** The features above are implemented and passed the local gate of the 3.0.0 port: the CI script (static checks, both builds, the wake script cases and the product's refusal of test modes), six receipted verification runs and a review of the renders. The app is in daily use on the author's machine.
+**v3.0.0 source candidate — physical validation pending.** The features above are implemented and passed the local gate of the 3.0.0 port: the CI script (static checks, both builds, the wake script cases and the product's refusal of test modes), six receipted verification runs and a review of the renders. On GitHub, CI (static checks, both builds and the fixture suites, plus Gitleaks) and CodeQL pass on `main` since the 3.0.0 merge on November 13, 2026; the earlier failures came from the runner's screen size and animation setting, both fixed in the test build ([port report](docs/atualizacao-publica-2026-11-08.md#ci-no-github-tela-do-runner)). The app is in daily use on the author's machine.
 
 Still open, and tracked in the [roadmap](docs/roadmap.md):
 
 - **The physical matrix in the Xbox mode:** Steam, DSX, real games, program search, the keyboard over games, G HUB, the DSX mute button, the TV and DPI. Real power actions and a real TV were not exercised for this version.
-- **CI on GitHub.** The last run on `main`, still 2.1.0, failed because Windows limits a window to the screen, so on the runner the bar was laid out smaller than the 1920 × 1080 the suites ask for. The test build now lifts that limit and always lays the suites out at the requested size; a second dependency, on the Windows animation setting, was fixed the same way. Both fixes pass locally with a 1024 × 768 screen and animations off emulated.
 - **The PS wake trace** records a PS seen after a resume as a correlation, never as proof that the controller woke the PC.
 
 The app is built for one setup and tested on one machine (Ryzen 7 7700X, Radeon RX 9070 XT, Windows 11 build 26300). The Steam integration reads Steam's own local files, which are not a public contract and can change with any Steam update.

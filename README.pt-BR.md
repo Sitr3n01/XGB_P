@@ -147,12 +147,11 @@ O executável não tem assinatura Authenticode, então o SmartScreen pode avisar
 
 ## Situação do projeto
 
-**v3.0.0 candidata nos fontes — validação física pendente.** Os recursos acima estão implementados e passaram no gate local do porte 3.0.0: o script de CI (verificações estáticas, as duas builds, os casos dos scripts de despertar e a recusa dos modos de teste pelo produto), seis execuções de verificação com recibo e a revisão dos renders. O app está em uso diário na máquina do autor.
+**v3.0.0 candidata nos fontes — validação física pendente.** Os recursos acima estão implementados e passaram no gate local do porte 3.0.0: o script de CI (verificações estáticas, as duas builds, os casos dos scripts de despertar e a recusa dos modos de teste pelo produto), seis execuções de verificação com recibo e a revisão dos renders. No GitHub, a CI (verificações estáticas, as duas builds e as suítes com dados de teste, além do Gitleaks) e o CodeQL passam no `main` desde o merge da 3.0.0, em 13/11/2026; as falhas anteriores vinham do tamanho da tela e da configuração de animações do runner, ambas corrigidas na build de testes ([relatório do porte](docs/atualizacao-publica-2026-11-08.md#ci-no-github-tela-do-runner)). O app está em uso diário na máquina do autor.
 
 Em aberto, e acompanhado no [roadmap](docs/roadmap.md):
 
 - **A matriz física no modo Xbox:** Steam, DSX, jogos reais, pesquisa de programas, teclado sobre jogos, G HUB, o botão de mudo do DSX, a TV e DPI. Ações de energia reais e uma TV real não foram ensaiadas nesta versão.
-- **A CI no GitHub.** A última execução no `main`, ainda na 2.1.0, falhou porque o Windows limita a janela ao tamanho da tela; no runner, a barra era montada menor que os 1920 × 1080 pedidos pelas suítes. A build de testes agora tira esse limite e sempre monta as suítes no tamanho pedido; uma segunda dependência, das animações do Windows, foi corrigida do mesmo jeito. As duas correções passam localmente com uma tela de 1024 × 768 e as animações desligadas emuladas.
 - **O registro de retomadas** trata o PS visto depois de uma retomada como correlação, nunca como prova de que o controle acordou o PC.
 
 O app foi feito para uma configuração e testado numa máquina (Ryzen 7 7700X, Radeon RX 9070 XT, Windows 11 build 26300). A integração com a Steam lê arquivos locais da própria Steam, que não são um contrato público e podem mudar a qualquer atualização.
