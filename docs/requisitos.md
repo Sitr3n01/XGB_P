@@ -1,4 +1,4 @@
-# Requisitos do XGB_P · V.3.0.0
+# Requisitos do XGB_P · V.3.1.0
 
 Barra de jogo para o modo Xbox do Windows 11, feita para o Steam Big Picture e o DualSense via DSX. Uso pessoal, uma configuração-alvo, sem promessa de compatibilidade universal.
 
@@ -30,6 +30,10 @@ A leitura HID é compartilhada e somente leitura: nenhum relatório de LED, vibr
 - **Teclado virtual:** sem foco em apps; ao abrir manualmente sobre jogo catalogado, compõe com foco e devolve ao enviar/cancelar; abre sozinho só no modo Xbox estável, também pelo acesso rápido e pela bandeja ([ADR 0052](decisoes/0052-teclado-virtual.md), [ADR 0087](decisoes/0087-teclado-automatico-so-com-modo-xbox-estavel.md)).
 
 Não há botão de preferência sem efeito nem ação simulada no fluxo normal. Dados de teste e efeitos substituídos existem só na build de verificação.
+
+## Novidades da 3.1.0
+
+Jogos do Xbox e do Game Pass no catálogo, foco do teclado conferido ao voltar ao jogo e mouse nos sliders (ADRs [0115](decisoes/0115-entrega-do-foco-de-entrada-ao-jogo.md)–[0117](decisoes/0117-jogos-do-xbox-no-catalogo.md)). Sem teste num jogo real do Xbox nem no modo Xbox.
 
 ## Novidades da 3.0.0
 

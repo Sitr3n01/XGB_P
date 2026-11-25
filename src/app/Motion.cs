@@ -73,9 +73,10 @@ namespace XGBP.Design
                 if (!MediaPanel() || selected == null || !selected.Playing) motionTicker.Stop();
             };
             window.IsVisibleChanged += delegate { if (!window.IsVisible) StopMotion(); };
-            StartRailFocus();
+            StartRailFocus(); StartSliderMouse();
             window.PreviewMouseWheel += delegate(object sender, MouseWheelEventArgs e) {
                 DependencyObject node = e.OriginalSource as DependencyObject;
+                if (!e.Handled && WheelSlider(node, e.Delta)) { e.Handled = true; return; }
                 while (node != null && !(node is ScrollViewer)) node = node is Visual ? VisualTreeHelper.GetParent(node) : null;
                 var scroll = node as ScrollViewer;
                 if (scroll == null || scroll.ScrollableHeight <= 0 || !MotionEnabled) return;

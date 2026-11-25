@@ -61,6 +61,10 @@ Abra o `XGB_P.exe` pelo Explorer. O app começa na bandeja, com uma instância p
 
 **Abra pelo Explorer, por um atalho ou pela inicialização do Windows,** e não a partir de um app empacotado (como apps de assistentes de IA). Esses apps virtualizam o `%LOCALAPPDATA%` dos processos que iniciam: o XGB_P aberto por eles grava numa cópia privada dos dados e é encerrado quando o app é atualizado.
 
+## Recursos da 3.1.0
+
+Jogos do Xbox e do Game Pass instalados aparecem nos jogos abertos e recentes e abrem pela barra. Os sliders aceitam clique em qualquer ponto da altura, arraste e a roda; numa lista que rola, a roda só muda o slider já clicado. Ao voltar ao jogo, a barra confere se ele recebeu o foco do teclado e o devolve uma vez, sem clique nem tecla simulada.
+
 ## Recursos da 3.0.0
 
 Em Configurações → Interface, **Trilho lateral** aplica e salva a escolha na hora. Sem trilho, use a seta à direita do título ou L1/R1. Programas fica no Acesso rápido. No teclado manual sobre jogos, Menu envia o texto e Círculo cancela. A faixa acompanha o mudo do microfone padrão e a bateria de fones suportados pelo G HUB local.

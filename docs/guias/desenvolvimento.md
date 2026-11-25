@@ -104,6 +104,10 @@ A aprovação de uma versão depende da matriz física ([roteiro](primeiros-test
 - O `csc` do .NET Framework não tem `/deterministic`: duas compilações dos mesmos fontes geram hashes diferentes. Por isso o `build.json` registra a impressão digital dos fontes junto com o hash do executável, e a release publica o atestado de proveniência. A migração para Roslyn está no [roadmap](../roadmap.md).
 - O executável não tem assinatura Authenticode.
 
+## Novas verificações da 3.1.0
+
+`--verify-motion` inclui `XboxGamesVerification` (24 verificações, pacotes de teste em pasta temporária), `SliderMouseVerification` (33, área clicável medida no modelo real) e `InputFocusVerification` (9, dentro da suíte de apps, com leitura e devolução do foco substituídas).
+
 ## Novas verificações da 3.0.0
 
 `--verify-motion` inclui programas, composição, G HUB, microfone, TV com transporte substituído, retomada e os dois layouts. A CI também exercita `verificar-bootps-scripts.ps1` com registro e WMI substituídos. A bateria local acrescenta `--verify-programs-live`, `--verify-wake-live` e `--verify-tv-live`; o último lê a rede local e fica fora da CI. `-SemLeituras` mantém só suítes e processos próprios.

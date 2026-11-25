@@ -184,6 +184,7 @@ namespace XGBP.Design
                     if (!t.Hidden)
                     {
                         t.Hidden = true; GameNavigationUi(delegate { Hide(); });
+                        WatchInputFocus(t.Target, t.Home ? "inicio do Big Picture" : "jogo");
                         if (gameTransition != t || !gameForeground(t.Target)) return;
                     }
                     if (t.StableSince == DateTime.MinValue) t.StableSince = feedbackNow();

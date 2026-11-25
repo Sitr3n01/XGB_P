@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/Sitr3n01/XGB_P/actions/workflows/ci.yml/badge.svg)](https://github.com/Sitr3n01/XGB_P/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/Sitr3n01/XGB_P/actions/workflows/codeql.yml/badge.svg)](https://github.com/Sitr3n01/XGB_P/actions/workflows/codeql.yml)
-[![Version](https://img.shields.io/badge/version-3.0.0%20candidate-6a9a6a)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-3.1.0%20candidate-6a9a6a)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%2011%20x64-0078D6?logo=windows)](#requirements)
 [![Stack](https://img.shields.io/badge/C%23%205-WPF%20%C2%B7%20.NET%20Framework%204.8-512BD4)](docs/guias/desenvolvimento.md)
@@ -24,17 +24,17 @@ The Xbox full screen experience turns a Windows 11 PC into a console-like device
 XGB_P is the bar that setup is missing: one press of PS opens it over the game, the controller navigates it, and it hands input back to Steam cleanly when it closes. Getting there meant solving the hard parts properly:
 
 - **Input ownership.** Steam keeps reading the controller while the bar is open. The bar opens only after the PS release, moves Steam to its desktop layout through a confirmed `steam://forceinputappid` cycle, and blocks navigation until Steam confirms the hand-off ([ADR 0041](docs/decisoes/0041-layout-de-desktop-da-steam-ao-abrir.md), [ADR 0074](docs/decisoes/0074-transferencia-rapida-do-steam-input-apos-soltar-ps.md)).
-- **Focus in the Xbox mode.** The shell shows one window at a time and refuses focus to an app opened from raw HID input. The bar is a tool window that requests focus explicitly and gives it back to the exact window it came from ([ADR 0040](docs/decisoes/0040-foco-da-barra-e-camada-uiaccess.md), [ADR 0046](docs/decisoes/0046-entrega-de-foco-antes-de-ocultar-a-barra.md)).
+- **Focus in the Xbox mode.** The shell shows one window at a time and refuses focus to an app opened from raw HID input. The bar is a tool window that requests focus explicitly and gives it back to the exact window it came from, then checks that the window also has keyboard focus, so the game takes input again without a click ([ADR 0115](docs/decisoes/0115-entrega-do-foco-de-entrada-ao-jogo.md), [ADR 0040](docs/decisoes/0040-foco-da-barra-e-camada-uiaccess.md), [ADR 0046](docs/decisoes/0046-entrega-de-foco-antes-de-ocultar-a-barra.md)).
 - **Switching games without a ghost overlay.** Starting a second Steam game while one runs left Steam's overlay on top. The bar closes the running game, waits for the native exit *and* for Steam to end that session, and only then launches the next one ([ADR 0070](docs/decisoes/0070-fechar-antes-de-iniciar-e-retorno-ao-inicio.md), [ADR 0072](docs/decisoes/0072-aguardar-encerramento-da-sessao-steam.md)).
 
 ## What it does
 
 | Panel | Capabilities |
 |---|---|
-| **Home** | *Back to game* first: every open game, current first, with pause, resume and close by process identity. Then quick access (four wide shortcuts and six square ones), the open apps with hold-to-close, three recent games and the media player for the active session ([ADR 0105](docs/decisoes/0105-voltar-ao-jogo-acima-do-acesso-rapido.md)) |
+| **Home** | *Back to game* first: every open game, current first, with pause, resume and close by process identity. Then quick access (four wide shortcuts and six square ones), the open apps with hold-to-close, three recent games and the media player for the active session. Xbox and Game Pass games installed as packages join the catalog next to Steam ones ([ADR 0117](docs/decisoes/0117-jogos-do-xbox-no-catalogo.md), [ADR 0105](docs/decisoes/0105-voltar-ao-jogo-acima-do-acesso-rapido.md)) |
 | **Programs** | Searches the Start menu index without accents, by initials and aliases, ranked by use, typed on a built-in keyboard driven by the controller. Launches through Explorer so a program does not inherit the bar's elevation, and brings a program that is already open to the front ([ADR 0096](docs/decisoes/0096-pesquisa-de-programas-pelo-acesso-rapido.md)) |
 | **Library** | Opens Steam Big Picture straight at *Collections → All*, through a fast local channel when the Steam client is recognized |
-| **Sound** | Output device, volume and mute, per-app mixer, microphone, media sources and seek. While the bar is open, the game or app in front plays at half volume |
+| **Sound** | Output device, volume and mute, per-app mixer, microphone, media sources and seek. While the bar is open, the game or app in front plays at half volume. Sliders take a click anywhere on their height, drag and the mouse wheel ([ADR 0116](docs/decisoes/0116-mouse-nos-sliders.md)) |
 | **Recording** | Radeon ReLive instant replay, screenshot and recording through AMD's own command tool; latest captures with thumbnails; a warning when recording with the microphone muted |
 | **Performance** | HWiNFO sensors, RTSS frame rate and the Windows power mode. Missing data shows as unavailable, never as a made-up number |
 | **AMD** | Global graphics settings through the driver's ADLX, grouped by upscaling and frames, latency, sync, image, anti-aliasing and maintenance; every change is re-read from the driver ([ADR 0100](docs/decisoes/0100-mais-opcoes-globais-da-amd-no-painel.md)) |
@@ -147,7 +147,7 @@ The executable is not Authenticode-signed, so SmartScreen may warn on first laun
 
 ## Project status
 
-**v3.0.0 source candidate — physical validation pending.** The features above are implemented and passed the local gate of the 3.0.0 port: the CI script (static checks, both builds, the wake script cases and the product's refusal of test modes), six receipted verification runs and a review of the renders. On GitHub, CI (static checks, both builds and the fixture suites, plus Gitleaks) and CodeQL pass on `main` since the 3.0.0 merge on November 13, 2026; the earlier failures came from the runner's screen size and animation setting, both fixed in the test build ([port report](docs/atualizacao-publica-2026-11-08.md#ci-no-github-tela-do-runner)). The app is in daily use on the author's machine.
+**v3.1.0 source candidate — physical validation pending.** 3.1.0 adds Xbox and Game Pass games, keyboard focus on return to a game and mouse support on sliders; its CI script, including the new suites, passed locally before the push. The features above are implemented and passed the local gate of the 3.0.0 port: the CI script (static checks, both builds, the wake script cases and the product's refusal of test modes), six receipted verification runs and a review of the renders. On GitHub, CI (static checks, both builds and the fixture suites, plus Gitleaks) and CodeQL pass on `main` since the 3.0.0 merge on November 13, 2026; the earlier failures came from the runner's screen size and animation setting, both fixed in the test build ([port report](docs/atualizacao-publica-2026-11-08.md#ci-no-github-tela-do-runner)). The app is in daily use on the author's machine.
 
 Still open, and tracked in the [roadmap](docs/roadmap.md):
 

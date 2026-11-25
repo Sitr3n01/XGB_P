@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "releaseVersion": "3.0.0",
+  "releaseVersion": "3.1.0",
   "maxNewFileLines": 500,
   "legacyLineCaps": {
     "src/app/VirtualKeyboard.cs": 1048,

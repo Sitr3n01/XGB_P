@@ -120,6 +120,10 @@ Cada decisão importante fica num arquivo `NNNN-titulo.md`. Uma decisão aceita 
 | [0112](0112-trilho-lateral-como-opcao-e-ordem-das-configuracoes.md) | Trilho lateral como opção e ordem das Configurações | Aceita; candidata pública 3.0.0 |
 | [0113](0113-reforco-sutil-do-icone-dualsense.md) | Reforço sutil do ícone DualSense | Aceita; candidata pública 3.0.0 |
 | [0114](0114-bootps-reversivel-e-identificador-de-retomada.md) | BootPS reversível e identificador de retomada | Aceita; candidata pública 3.0.0 |
+| [0115](0115-entrega-do-foco-de-entrada-ao-jogo.md) | Entrega do foco de entrada ao jogo | Aceita; candidata pública 3.1.0 |
+| [0116](0116-mouse-nos-sliders.md) | Mouse nos sliders | Aceita; candidata pública 3.1.0 |
+| [0117](0117-jogos-do-xbox-no-catalogo.md) | Jogos do Xbox e do Game Pass no catálogo | Aceita; candidata pública 3.1.0 |
+| [0118](0118-versao-3.1.0.md) | Versão 3.1.0 | Aceita; candidata pública 3.1.0 |
 
 ## Modelo
 

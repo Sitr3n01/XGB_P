@@ -8,6 +8,18 @@ All notable changes to XGB_P are documented here. The format follows [Keep a Cha
 
 - The READMEs and the roadmap now report the GitHub CI as passing on `main` since the 3.0.0 merge on November 13, 2026, replacing the note about the 2.1.0 failure, and the roadmap no longer says the port is unpublished.
 
+## [3.1.0] — Unreleased
+
+### Added
+
+- Xbox and Game Pass games: installed packages with a `MicrosoftGame.config` join the catalog, the open games and the recent games, and launch through `shell:AppsFolder`, through Explorer when the bar is elevated. Read-only, without the package installation API ([ADR 0117](docs/decisoes/0117-jogos-do-xbox-no-catalogo.md)).
+- Mouse on sliders: the whole slider height takes a click, which jumps to the point, plus drag and the wheel. Over a scrolling list, only a slider already clicked takes the wheel. AMD sends the value after release ([ADR 0116](docs/decisoes/0116-mouse-nos-sliders.md)).
+
+### Fixed
+
+- Returning to a game no longer needs a mouse click before it takes input. An accepted foreground request is given up to 150 ms to land before the thread-input fallback; combining the pending request with the fallback left the target in front without an active window. After each hand-off the bar checks the target thread for an active window and restores input focus once ([ADR 0115](docs/decisoes/0115-entrega-do-foco-de-entrada-ao-jogo.md)).
+- The log records a missing DualSense once per absence instead of every 2 s.
+
 ## [3.0.0] — Unreleased
 
 ### Added

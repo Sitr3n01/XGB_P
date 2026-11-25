@@ -16,6 +16,8 @@ namespace XGBP.Games
         public string[] RuntimePaths = new string[0], RequiredFiles = new string[0];
         public string IconLocation, IconKey, IconSource;
         public byte[] IconPng;
+        // Xbox/Game Pass: abre pelo identificador do aplicativo; o pacote identifica o processo (ADR 0117).
+        public string LaunchApp, PackageFullName;
         public bool Available;
         // Atalho externo sem RuntimePaths explicito: o alvo pode ser um lancador (unlocker, wrapper proprio) que abre o
         // jogo como filho. A sessao adota os filhos sem dono do alvo; a janela deles so vale se o alvo nao tiver uma (ADR 0089).
@@ -73,7 +75,8 @@ namespace XGBP.Games
             string n = Path.GetFileName(path ?? "").ToLowerInvariant();
             bool crashHelper = n.StartsWith("crashreport", StringComparison.Ordinal) || n.StartsWith("crashpad", StringComparison.Ordinal) ||
                 n.StartsWith("crashhandler", StringComparison.Ordinal) || n.StartsWith("unitycrashhandler", StringComparison.Ordinal);
-            return crashHelper || n.Contains("unins") || n.Contains("setup") || n.Contains("cef") || n.Contains("anticheat") || n.Contains("thirdparty") || n.Contains("redist") || n.Contains("webview");
+            return crashHelper || n == "gamelaunchhelper.exe" || n.Contains("unins") || n.Contains("setup") || n.Contains("cef") ||
+                n.Contains("anticheat") || n.Contains("thirdparty") || n.Contains("redist") || n.Contains("webview");
         }
         public static long Epoch(DateTime utc) { return (long)(utc.ToUniversalTime() - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds; }
         public static long ValidTime(string text, DateTime now)
@@ -81,7 +84,7 @@ namespace XGBP.Games
         public static bool Ready(GameEntry entry)
         {
             if (entry.Kind != "Game") return false;
-            if (string.IsNullOrEmpty(entry.LaunchUri) && string.IsNullOrEmpty(entry.LaunchFile)) return false;
+            if (string.IsNullOrEmpty(entry.LaunchUri) && string.IsNullOrEmpty(entry.LaunchFile) && string.IsNullOrEmpty(entry.LaunchApp)) return false;
             if (!string.IsNullOrEmpty(entry.LaunchFile) && !File.Exists(entry.LaunchFile)) return false;
             if (!string.IsNullOrEmpty(entry.InstallRoot) && !Directory.Exists(entry.InstallRoot)) return false;
             foreach (var f in entry.RequiredFiles) if (!File.Exists(f)) return false;

@@ -101,6 +101,7 @@ namespace XGBP.Design
                     {
                         var settings = GameFiles.Read<GameSettings>(Path.Combine(GameFiles.Folder, "catalog.json"));
                         var catalog = SteamCatalog.Read(settings);
+                        ReportXboxCatalog(catalog, XboxCatalog.Append(catalog, settings));
                         string repeated = string.Join(", ", catalog.Repeated.ToArray());
                         if (repeated != gamesRepeated) { gamesRepeated = repeated; if (repeated.Length > 0) WriteLog("jogos: registros repetidos ignorados | " + repeated); }
                         gameCatalog = catalog;
@@ -369,7 +370,8 @@ namespace XGBP.Design
         }
         static void LaunchGame(GameEntry e)
         {
-            if (!string.IsNullOrEmpty(e.LaunchUri)) LaunchSteamProtocol(e.LaunchUri);
+            if (!string.IsNullOrEmpty(e.LaunchApp)) LaunchXboxGame(e.LaunchApp);
+            else if (!string.IsNullOrEmpty(e.LaunchUri)) LaunchSteamProtocol(e.LaunchUri);
             else
             {
                 if (!string.Equals(Path.GetExtension(e.LaunchFile), ".exe", StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("Cadastre um executável de jogo.");
@@ -426,11 +428,13 @@ namespace XGBP.Design
         {
             var settings = GameFiles.Read<GameSettings>(Path.Combine(GameFiles.Folder, "catalog.json"));
             var catalog = SteamCatalog.Read(settings); var lines = new List<string>();
+            string xbox = XboxCatalog.Append(catalog, settings); if (xbox.Length > 0) lines.Add("Xbox: " + xbox);
             var history = new GameHistory(Path.Combine(GameFiles.Folder, "history.json"));
             uint pid = 0; GetWindowThreadProcessId(GetForegroundWindow(), out pid);
             gamesView = new GameSessions(history).Update(catalog, GameProcess.Read(), DesktopWindows.Read((uint)Process.GetCurrentProcess().Id), 0, DateTime.UtcNow);
             var images = new GameImages(Path.Combine(Output, "games-images-live-cache")); images.RefreshDesktop(); images.Fill(gamesView);
-            foreach (var e in gamesView.Entries) lines.Add(e.Name + " | " + e.Key + " | " + e.Kind + " | disponivel=" + e.Available + " | ultimo=" + e.LastPlayed + " | " + e.LaunchUri + " | runtime=" + string.Join(";", e.RuntimePaths));
+            foreach (var e in gamesView.Entries) lines.Add(e.Name + " | " + e.Key + " | " + e.Kind + " | disponivel=" + e.Available +
+                " | ultimo=" + e.LastPlayed + " | " + (e.LaunchUri ?? e.LaunchApp) + " | runtime=" + string.Join(";", e.RuntimePaths));
             lines.Add("Estado: " + catalog.Status); lines.Add("Sem lancamentos e sem observacao de foreground/persistencia neste diagnostico.");
             foreach (var e in gamesView.Entries) if (e.IconPng != null) lines.Add("Imagem: " + e.Name + " | " + e.IconSource + " | " + e.IconKey);
             lines.Add("Cache de imagens deste diagnostico somente em bin/design-preview/games-images-live-cache.");

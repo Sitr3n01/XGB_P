@@ -479,7 +479,7 @@ namespace XGBP.Design
                         if (!appForeground(item)) return;
                     }
                     TraceAppSwitch("confirmado", item);
-                    WriteLog("janelas: foreground confirmado | " + item.Key);
+                    WriteLog("janelas: foreground confirmado | " + item.Key); WatchInputFocus(item, "app");
                     FinishFeedback(appSwitchFeedback, "Janela de " + item.AppName + " ativada.", FeedbackKind.Success);
                     switchingApp = null; appSwitchConfirmed = null; appSwitchTimer.Stop();
                     if (confirmed != null) confirmed();

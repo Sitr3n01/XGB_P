@@ -1,8 +1,8 @@
-# Roadmap — XGB_P V.3.0.0
+# Roadmap — XGB_P V.3.1.0
 
 ## Situação
 
-Os fontes da candidata 3.0.0 incorporam as mudanças até 08/11, preservando a estrutura pública. O porte está no `main` do GitHub desde 13/11 (PR #2), sem release publicada. [Comparação, limites e validação](atualizacao-publica-2026-11-08.md). Aprovação final depende da matriz física.
+Os fontes da candidata 3.1.0 incorporam as mudanças até 25/11 (jogos do Xbox, foco do teclado ao voltar ao jogo e mouse nos sliders), preservando a estrutura pública. O porte da 3.0.0 incorporou as mudanças até 08/11. O porte está no `main` do GitHub desde 13/11 (PR #2), sem release publicada. [Comparação, limites e validação](atualizacao-publica-2026-11-08.md). Aprovação final depende da matriz física.
 
 | Etapa | Estado |
 |---|---|
