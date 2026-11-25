@@ -19,20 +19,24 @@ namespace XGBP.Design
             Func<bool> request = delegate { requests++; if (requests == 2) foreground = destination; return true; };
             Func<string> connect = delegate { connections++; return null; };
             Action disconnect = delegate { disconnections++; }, raise = delegate { raises++; };
-            string report = DesktopWindows.TransferAppForeground(destination, delegate { return foreground; }, request, connect, disconnect, raise);
+            string report = DesktopWindows.TransferAppForeground(destination, delegate { return foreground; }, request, connect, disconnect,
+                raise, delegate { });
             check(requests == 2 && connections == 1 && disconnections == 1 && raises == 1 && foreground == destination && report.Contains("comFila=True"),
                 "retorno direto positivo sem entrega tenta fila e a desliga");
             requests = connections = disconnections = raises = 0; foreground = destination;
-            DesktopWindows.TransferAppForeground(destination, delegate { return foreground; }, delegate { requests++; return true; }, connect, disconnect, raise);
+            DesktopWindows.TransferAppForeground(destination, delegate { return foreground; }, delegate { requests++; return true; }, connect,
+                disconnect, raise, delegate { });
             check(requests == 1 && connections == 0 && disconnections == 0, "entrega direta dispensa fila");
             foreground = new IntPtr(456); requests = 0;
             report = DesktopWindows.TransferAppForeground(destination, delegate { return foreground; }, delegate { requests++; return false; },
-                delegate { return "fila recusada (erro 5)"; }, disconnect, raise);
+                delegate { return "fila recusada (erro 5)"; }, disconnect, raise, delegate { });
             check(requests == 1 && disconnections == 0 && report.Contains("erro 5"), "fila recusada e registrada sem simular teclado");
             bool failed = false;
-            try { DesktopWindows.TransferAppForeground(destination, delegate { return foreground; }, delegate { return false; }, connect, disconnect, delegate { throw new IOException("fixture"); }); }
+            try { DesktopWindows.TransferAppForeground(destination, delegate { return foreground; }, delegate { return false; }, connect,
+                disconnect, delegate { throw new IOException("fixture"); }, delegate { }); }
             catch (IOException) { failed = true; }
             check(failed && disconnections == 1, "fila desligada mesmo quando o pedido falha");
+            VerifyInputFocus(check);
 
             var oldAvailable = appAvailable; var oldForeground = appForeground; var oldOwns = appOwnsForeground; var oldSwitch = switchApp;
             var oldRead = foregroundRead; var oldObserve = observeWindow; var oldIsApp = previousIsApp; var oldClock = feedbackNow;

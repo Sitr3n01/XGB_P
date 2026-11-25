@@ -322,8 +322,7 @@ namespace XGBP.Input
         readonly List<Thread> threads = new List<Thread>();
         readonly ManualResetEvent stop = new ManualResetEvent(false);
         readonly Dictionary<string, ButtonEvent> lastByKey = new Dictionary<string, ButtonEvent>();
-        Thread scanner;
-        int labelCounter = -1;
+        Thread scanner; bool emptyReported; int labelCounter = -1;
 
         public void Start()
         {
@@ -353,7 +352,8 @@ namespace XGBP.Input
         public void Scan(bool read)
         {
             var found = Hid.FindDualSenses();
-            if (found.Count == 0 && known.Count == 0 && blocked.Count == 0) Emit("nenhum DualSense encontrado");
+            if (found.Count > 0) emptyReported = false;
+            else if (known.Count == 0 && blocked.Count == 0 && !emptyReported) { emptyReported = true; Emit("nenhum DualSense encontrado"); }
             foreach (var dev in found)
             {
                 lock (known) { if (known.Contains(dev.Path)) continue; }

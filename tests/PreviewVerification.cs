@@ -56,7 +56,7 @@ namespace XGBP.Design
             if (Keyboard.FocusedElement != rail[6]) throw new Exception("Falha: trilho sem Jogo atual.");
             Navigate("DIREITA");
             if ((string)((Control)Keyboard.FocusedElement).Tag != "output") throw new Exception("Falha: entrada do Som pela saida de som.");
-            VerifyAudioPanel();
+            VerifyAudioPanel(); VerifySliderMouse();
             VerifySystemPower();
             VerifyReleaseSurface();
             VerifyAppearancePreferences();
@@ -94,7 +94,7 @@ namespace XGBP.Design
             VerifyActivation();
             VerifyDesktopWinG();
             VerifyGamePersistence();
-            VerifyLauncherChildren();
+            VerifyLauncherChildren(); VerifyXboxGames();
             VerifyExitGamingMode();
             VerifyTaskbarAutoHide(); VerifyAppVolume(); VerifySteamStatus();
             VerifyKeyboard(); VerifyKeyboardCompose(); VerifyWake(); VerifyTv(); VerifyTvCore(); VerifyTvIntegration();

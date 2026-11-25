@@ -183,7 +183,7 @@ if (failure != null) { FinishFeedback(notice, failure.Message, FeedbackKind.Erro
         void FlushAmdSlider()
         {
             if (amdSliderId == null || disposed) { amdSliderTimer.Stop(); return; }
-            if (amdTuningPending != null) return;
+            if (amdTuningPending != null || SliderDragging) return; // aplicar reconstruiria o painel sob o ponteiro
             amdSliderTimer.Stop();
             string id = amdSliderId; int value = amdSliderValue; amdSliderId = null;
             var f = amdTuning == null ? null : amdTuning.Find(TuningKey(id));

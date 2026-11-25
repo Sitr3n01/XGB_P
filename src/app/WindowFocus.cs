@@ -60,6 +60,7 @@ namespace XGBP.Design
 
         void StartWindowFocus()
         {
+            StartInputFocus();
             windowTraceTimer.Tick += delegate { TraceWindowChanges(); };
             window.Activated += delegate { foregroundSinceOpen = true; };
             if (verify) ConfigureWindowFocusVerification();
@@ -155,6 +156,7 @@ namespace XGBP.Design
                     bool minimizedMeanwhile = !previous.Window.Minimized && current != null && current.Window.Minimized &&
                         current.Window.ProcessId == previous.Window.ProcessId && current.Window.ProcessCreated == previous.Window.ProcessCreated;
                     bool accepted = minimizedMeanwhile ? restoreWindowFocus(previous.Window) : returnWindowFocus(previous.Window);
+                    if (accepted) WatchInputFocus(previous.Window, "barra fechada");
                     WriteLog("foco: retorno solicitado | hwnd=" + previous.Window.Handle.ToInt64() + "; aceito=" + accepted +
                         (minimizedMeanwhile ? "; restaurada (minimizou com a barra na frente)" : ""));
                 }

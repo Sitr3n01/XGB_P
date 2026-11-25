@@ -197,15 +197,15 @@
     </Style>
     <Style x:Key="SliderTrackButton" TargetType="RepeatButton">
       <Setter Property="Focusable" Value="False"/><Setter Property="IsTabStop" Value="False"/>
-      <Setter Property="Height" Value="4"/>
+      <!-- A linha tem 4 DIP; a altura inteira recebe o mouse (ADR 0116). -->
       <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="RepeatButton">
-        <Border Background="{TemplateBinding Background}" CornerRadius="2"/>
+        <Border Background="Transparent"><Border Height="4" Background="{TemplateBinding Background}" CornerRadius="2"/></Border>
       </ControlTemplate></Setter.Value></Setter>
     </Style>
     <Style x:Key="VolumeSlider" TargetType="Slider">
       <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
       <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Slider">
-        <Border x:Name="SliderFocus" BorderThickness="2" BorderBrush="Transparent" CornerRadius="5" Padding="4,0">
+        <Border x:Name="SliderFocus" Background="Transparent" BorderThickness="2" BorderBrush="Transparent" CornerRadius="5" Padding="4,0">
           <Track x:Name="PART_Track" Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" Value="{TemplateBinding Value}">
             <Track.DecreaseRepeatButton><RepeatButton Style="{StaticResource SliderTrackButton}" Background="{StaticResource XboxGreen}" Command="{x:Static Slider.DecreaseLarge}"/></Track.DecreaseRepeatButton>
             <Track.Thumb><Thumb Width="6" Height="18"><Thumb.Template><ControlTemplate TargetType="Thumb"><Border Background="{StaticResource TextPrimary}" BorderBrush="{StaticResource SurfacePanel}" BorderThickness="1" CornerRadius="2"/></ControlTemplate></Thumb.Template></Thumb></Track.Thumb>

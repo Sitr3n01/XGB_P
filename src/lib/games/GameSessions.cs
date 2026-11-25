@@ -13,7 +13,7 @@ namespace XGBP.Games
     {
         public uint Pid, ParentPid;
         public long Created;
-        public string Path, Name;
+        public string Path, Name, PackageFullName;
         string full;
         public string Instance { get { return Pid + ":" + Created; } }
         public string Full { get { return full ?? (full = GameFiles.Normalize(Path)); } }
@@ -34,7 +34,7 @@ namespace XGBP.Games
                     long created, exit, kernel, user;
                     string image = ReadImagePath(h, ref path);
                     if (image != null && GetProcessTimes(h, out created, out exit, out kernel, out user))
-                    { item.Path = image; item.Created = created; }
+                    { item.Path = image; item.Created = created; item.PackageFullName = XboxCatalog.PackageOf(h); }
                 }
                 finally { CloseHandle(h); }
                 if (item.Path != null) item.Name = System.IO.Path.GetFileName(item.Path);
@@ -179,7 +179,10 @@ namespace XGBP.Games
             if (p.Created <= 0 || string.IsNullOrEmpty(p.Path) || GameFiles.Helper(p.Path)) return false;
             string name = System.IO.Path.GetFileName(p.Path).ToLowerInvariant();
             if (name == "wscript.exe" || name == "cscript.exe" || name == "cmd.exe" || name == "powershell.exe" || name == "javaw.exe") return false;
-            return Array.Exists(e.RuntimePaths, r => string.Equals(r, p.Full, StringComparison.OrdinalIgnoreCase));
+            // Mesmo pacote e mesmo executavel: o Windows pode informar outro caminho da mesma pasta (ADR 0117).
+            bool package = e.PackageFullName != null && string.Equals(e.PackageFullName, p.PackageFullName, StringComparison.OrdinalIgnoreCase);
+            return Array.Exists(e.RuntimePaths, r => string.Equals(r, p.Full, StringComparison.OrdinalIgnoreCase) ||
+                package && string.Equals(System.IO.Path.GetFileName(r), name, StringComparison.OrdinalIgnoreCase));
         }
         public GamesView Update(GameCatalogState catalog, List<GameProcess> processes, List<DesktopWindow> windows, uint foregroundPid, DateTime now, Func<DesktopWindow, bool> stillValid = null)
         {

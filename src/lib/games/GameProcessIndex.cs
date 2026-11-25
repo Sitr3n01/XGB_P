@@ -10,7 +10,7 @@ namespace XGBP.Games
         // Profundidade maxima a partir do alvo do atalho: lancador -> wrapper -> jogo, com folga de um nivel.
         public const int MaxChildDepth = 3;
         readonly Dictionary<string, List<GameProcess>> matches = new Dictionary<string, List<GameProcess>>();
-        readonly Dictionary<string, HashSet<string>> paths = NewMap(), names = NewMap(), roots = NewMap();
+        readonly Dictionary<string, HashSet<string>> paths = NewMap(), names = NewMap(), roots = NewMap(), packages = NewMap();
         // Processos sem nenhum jogo candidato, com caminho e criacao legiveis e fora da lista de auxiliares, por PID do pai.
         readonly Dictionary<uint, List<GameProcess>> orphans = new Dictionary<uint, List<GameProcess>>();
         readonly Dictionary<string, GameProcess> unclaimed = new Dictionary<string, GameProcess>(StringComparer.Ordinal);
@@ -40,7 +40,7 @@ namespace XGBP.Games
                     Add(paths, path, game.Key);
                     Add(names, Path.GetFileName(path), game.Key);
                 }
-                Add(roots, game.InstallRoot, game.Key);
+                Add(roots, game.InstallRoot, game.Key); Add(packages, game.PackageFullName, game.Key);
             }
             foreach (var process in processes)
             {
@@ -52,6 +52,13 @@ namespace XGBP.Games
                     Include(paths, process.Full, candidates);
                     if (!GameFiles.Helper(process.Full))
                     {
+                        // Filhos herdam a identidade do pacote: ela so vale com o nome de um executavel do proprio jogo (ADR 0117).
+                        if (process.PackageFullName != null)
+                        {
+                            var owners = new HashSet<string>(StringComparer.Ordinal); var named = new HashSet<string>(StringComparer.Ordinal);
+                            Include(packages, process.PackageFullName, owners); Include(names, Path.GetFileName(process.Full), named);
+                            owners.IntersectWith(named); candidates.UnionWith(owners);
+                        }
                         string parent = Path.GetDirectoryName(process.Full);
                         while (!string.IsNullOrEmpty(parent))
                         {

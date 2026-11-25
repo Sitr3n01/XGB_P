@@ -1,4 +1,4 @@
-# Arquitetura do XGB_P · V.3.0.0
+# Arquitetura do XGB_P · V.3.1.0
 
 Aplicativo residente WPF, x64, em C# 5 sobre o .NET Framework 4.8 que vem com o Windows. Um único processo, sem serviço, driver ou runtime extra. A interface é uma `partial class Preview` em `src/app`; as integrações com o sistema ficam em bibliotecas por área em `src/lib`.
 
